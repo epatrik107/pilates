@@ -1,6 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
 import { initializeFirestore } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app-check.js';
 
 // ============================================================
 //  FIREBASE CONFIGURATION
@@ -56,22 +57,20 @@ const appCheckConfig = {
   recaptchaSiteKey: "6LcAEZ0sAAAAAIV4SAuZQBIGRkCWWS4CkEmcyTed",
 };
 
-const app  = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+
+// App Check MUST be initialized before auth/firestore so the
+// interceptor is registered before any network requests go out.
+if (appCheckConfig.recaptchaSiteKey) {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider(appCheckConfig.recaptchaSiteKey),
+    isTokenAutoRefreshEnabled: true
+  });
+}
+
 const auth = getAuth(app);
 const db   = initializeFirestore(app, {
   experimentalForceLongPolling: true,
 });
-
-// App Check initialization (if configured)
-if (appCheckConfig.recaptchaSiteKey) {
-  import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app-check.js')
-    .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
-      initializeAppCheck(app, {
-        provider: new ReCaptchaV3Provider(appCheckConfig.recaptchaSiteKey),
-        isTokenAutoRefreshEnabled: true
-      });
-    })
-    .catch(err => console.warn('App Check init failed:', err));
-}
 
 export { app, auth, db, onAuthStateChanged, googleCalendarConfig, appCheckConfig };
