@@ -157,18 +157,21 @@
         await registerUser(name, email, password);
         window.location.href = 'index.html';
       } catch (err) {
+        console.error('Registration error:', err);
+        isRegistering = false;
+        btn.disabled = false;
+        btn.textContent = 'Regisztráció';
+
         const messages = {
           'auth/email-already-in-use': 'Ez az e-mail cím már foglalt.',
           'auth/weak-password':        'A jelszó túl gyenge.',
-          'auth/invalid-email':        'Érvénytelen e-mail cím formátum.'
+          'auth/invalid-email':        'Érvénytelen e-mail cím formátum.',
+          'auth/network-request-failed': 'Hálózati hiba. Ellenőrizd az internetkapcsolatod.',
+          'auth/too-many-requests':    'Túl sok próbálkozás. Próbáld újra később.'
         };
         const code = err.code || '';
         errorMsg.textContent = messages[code] || err.message || 'Hiba történt a regisztráció során.';
         errorMsg.classList.remove('hidden');
-      } finally {
-        isRegistering = false;
-        btn.disabled = false;
-        btn.textContent = 'Regisztráció';
       }
     });
   </script>

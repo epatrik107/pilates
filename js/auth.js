@@ -26,14 +26,24 @@ export async function registerUser(name, email, password) {
   }
 
   const cred = await createUserWithEmailAndPassword(auth, email, password);
-  await updateProfile(cred.user, { displayName: cleanName });
 
-  await setDoc(doc(db, 'users', cred.user.uid), {
-    name: cleanName,
-    email,
-    role: 'user',
-    createdAt: serverTimestamp()
-  });
+  try {
+    await updateProfile(cred.user, { displayName: cleanName });
+  } catch (profileErr) {
+    console.warn('Profile update failed (non-critical):', profileErr);
+  }
+
+  try {
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      name: cleanName,
+      email,
+      role: 'user',
+      createdAt: serverTimestamp()
+    });
+  } catch (firestoreErr) {
+    console.error('Firestore user profile write failed:', firestoreErr);
+    throw firestoreErr;
+  }
 
   return cred.user;
 }
