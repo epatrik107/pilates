@@ -11,14 +11,14 @@
         extend: {
           colors: {
             sage: { 50:'#f4f7f0',100:'#e6edde',200:'#cddabd',300:'#a9bf93',400:'#87a46e',500:'#6b8a53',600:'#536d3f',700:'#425634',800:'#37462d',900:'#2f3b27' },
-            cream: '#faf8f4'
+            cream: '#faf8f4',
+            motibro: { blue: '#3ea3dc', green: '#5cb85c', orange: '#f0ad4e' }
           }
         }
       }
     }
   </script>
   <link rel="stylesheet" href="css/style.css" />
-  <!-- Google Calendar API (optional – if configured) -->
   <script src="https://apis.google.com/js/api.js" async defer></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -34,24 +34,18 @@
           </svg>
           <span class="font-display text-xl font-bold text-sage-700">Pilates Studio</span>
         </a>
-
-        <!-- Desktop nav -->
         <div id="desktop-nav" class="hidden md:flex items-center gap-1">
           <a href="index.html" class="nav-link">Órarend</a>
           <a href="about.html" class="nav-link">Rólam</a>
           <a href="login.html" class="nav-link">Bejelentkezés</a>
           <a href="register.html" class="nav-link nav-link-primary">Regisztráció</a>
         </div>
-
-        <!-- Hamburger -->
         <button id="menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
           <svg class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
       </div>
-
-      <!-- Mobile menu -->
       <div id="mobile-menu" class="hidden md:hidden pb-4">
         <div id="mobile-nav" class="flex flex-col gap-1">
           <a href="index.html" class="nav-link">Órarend</a>
@@ -63,44 +57,50 @@
     </div>
   </nav>
 
-  <!-- ═══ HERO ═══ -->
-  <section class="hero-gradient py-16 sm:py-20">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-      <h1 class="text-4xl sm:text-5xl font-display font-bold text-sage-800 mb-4">
-        Találd meg a tökéletes Pilates órát
-      </h1>
-      <p class="text-lg text-sage-600 max-w-2xl mx-auto">
-        Böngészd az elérhető órákat, foglalj helyet egyetlen kattintással, és kezdd el az utadat egy erősebb, rugalmasabb test felé.
-      </p>
-    </div>
-  </section>
-
-  <!-- ═══ FILTERS ═══ -->
-  <section class="max-w-6xl mx-auto px-4 sm:px-6 -mt-6">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col sm:flex-row gap-3 items-end">
-      <div class="flex-1 w-full">
-        <label class="form-label">Szűrés típus szerint</label>
-        <select id="filter-type" class="form-input">
-          <option value="all">Összes típus</option>
-          <option value="mat">Mat Pilates</option>
-          <option value="reformer">Reformer</option>
-          <option value="tower">Tower</option>
-          <option value="prenatal">Kismama</option>
-        </select>
-      </div>
-      <div class="flex-1 w-full">
-        <label class="form-label">Szűrés dátum szerint</label>
-        <input type="date" id="filter-date" class="form-input" />
-      </div>
-      <button id="clear-filters" class="btn-secondary btn-sm whitespace-nowrap">Szűrők törlése</button>
-    </div>
-  </section>
-
   <!-- ═══ SCHEDULE ═══ -->
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-    <div id="classes-container">
-      <!-- Loading... -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+    <h1 class="text-2xl sm:text-3xl font-display font-bold text-center text-sage-800 mb-6">ÓRAREND</h1>
+
+    <!-- ── Filters ── -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+      <div class="flex flex-col sm:flex-row gap-3 mb-3">
+        <div class="flex-1">
+          <select id="filter-instructor" class="form-input w-full">
+            <option value="all">Oktatók kiválasztása</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <select id="filter-type" class="form-input w-full">
+            <option value="all">Foglalkozások kiválasztása</option>
+            <option value="mat">Mat Pilates</option>
+            <option value="reformer">Reformer Pilates</option>
+            <option value="tower">Tower Pilates</option>
+            <option value="prenatal">Kismama Pilates</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-x-4 gap-y-1 justify-center text-sm">
+        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="1" checked /> Hétfő</label>
+        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="2" checked /> Kedd</label>
+        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="3" checked /> Szerda</label>
+        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="4" checked /> Csütörtök</label>
+        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="5" checked /> Péntek</label>
+        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="6" checked /> Szombat</label>
+        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="0" checked /> Vasárnap</label>
+      </div>
     </div>
+
+    <!-- ── Table header (desktop) ── -->
+    <div class="hidden sm:grid grid-cols-[80px_1fr_1fr_1fr_140px] gap-2 px-4 py-2 text-sm font-semibold text-gray-500 border-b border-gray-200 mb-1">
+      <div></div>
+      <div>Oktató</div>
+      <div>Időpont</div>
+      <div>Foglalkozás</div>
+      <div></div>
+    </div>
+
+    <!-- ── Classes container ── -->
+    <div id="classes-container"></div>
   </main>
 
   <!-- ═══ FOOTER ═══ -->
@@ -124,7 +124,6 @@
 
     initNavbar();
 
-    // Google Calendar API initialization (if configured)
     let gcalAPIEnabled = false;
     if (googleCalendarConfig.clientId && googleCalendarConfig.apiKey) {
       initGoogleCalendarAPI(googleCalendarConfig.clientId, googleCalendarConfig.apiKey)
@@ -132,78 +131,82 @@
         .catch(() => {});
     }
 
-    const container    = document.getElementById('classes-container');
-    const filterType   = document.getElementById('filter-type');
-    const filterDate   = document.getElementById('filter-date');
-    const clearFilters = document.getElementById('clear-filters');
+    const container        = document.getElementById('classes-container');
+    const filterType       = document.getElementById('filter-type');
+    const filterInstructor = document.getElementById('filter-instructor');
+    const dayCheckboxes    = document.querySelectorAll('.day-filter');
 
     let allClasses  = [];
     let currentUser = null;
 
-    // ── Auth state listener ──────────────────────────────
     onAuthStateChanged(auth, (user) => {
       currentUser = user;
       loadClasses();
     });
 
-    // ── Filters ─────────────────────────────────────────────
     filterType.addEventListener('change', renderClasses);
-    filterDate.addEventListener('change', renderClasses);
-    clearFilters.addEventListener('click', () => {
-      filterType.value = 'all';
-      filterDate.value = '';
-      renderClasses();
-    });
+    filterInstructor.addEventListener('change', renderClasses);
+    dayCheckboxes.forEach(cb => cb.addEventListener('change', renderClasses));
 
-    // ── Load classes ─────────────────────────────────────
     async function loadClasses() {
       showLoading(container);
       try {
         allClasses = await getUpcomingClasses();
+        populateInstructorFilter();
         renderClasses();
       } catch (err) {
         container.innerHTML = `
           <div class="text-center py-16 text-red-500">
             <p class="font-medium">Hiba az órák betöltése során</p>
             <p class="text-sm mt-1">${escapeHtml(err.message)}</p>
-          </div>
-        `;
+          </div>`;
       }
     }
 
-    // ── Google Calendar SVG icon ───────────────────────────
-    const calendarSvg = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
-    </svg>`;
+    function populateInstructorFilter() {
+      const instructors = [...new Set(allClasses.map(c => c.instructorName).filter(Boolean))];
+      filterInstructor.innerHTML = '<option value="all">Oktatók kiválasztása</option>';
+      instructors.forEach(name => {
+        filterInstructor.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+      });
+    }
 
-    // ── Render ───────────────────────────────────────
+    function getEndTime(startTime, duration) {
+      const [h, m] = startTime.split(':').map(Number);
+      const total = h * 60 + m + (duration || 60);
+      return `${String(Math.floor(total / 60) % 24).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`;
+    }
+
+    function getDayOfWeek(dateStr) {
+      return new Date(dateStr + 'T00:00:00').getDay();
+    }
+
+    function getTypeName(type) {
+      const names = { mat:'Mat Pilates', reformer:'Reformer Pilates', tower:'Tower Pilates', prenatal:'Kismama Pilates' };
+      return names[type] || escapeHtml(type) || 'Pilates';
+    }
+
     async function renderClasses() {
-      let filtered = [...allClasses];
+      const typeVal       = filterType.value;
+      const instructorVal = filterInstructor.value;
+      const activeDays    = new Set([...dayCheckboxes].filter(cb => cb.checked).map(cb => Number(cb.value)));
 
-      const typeVal = filterType.value;
-      const dateVal = filterDate.value;
-
-      if (typeVal !== 'all') {
-        filtered = filtered.filter(c => c.type === typeVal);
-      }
-      if (dateVal) {
-        filtered = filtered.filter(c => c.date === dateVal);
-      }
+      let filtered = allClasses.filter(c => {
+        if (typeVal !== 'all' && c.type !== typeVal) return false;
+        if (instructorVal !== 'all' && c.instructorName !== instructorVal) return false;
+        if (!activeDays.has(getDayOfWeek(c.date))) return false;
+        return true;
+      });
 
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="empty-state">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-            </svg>
-            <p class="text-gray-500 font-medium">Nincs megjeleníthető óra</p>
-            <p class="text-gray-400 text-sm mt-1">Próbáld módosítani a szűrőket</p>
-          </div>
-        `;
+          <div class="text-center py-16">
+            <p class="text-gray-400 font-medium">Nincs megjeleníthető óra</p>
+            <p class="text-gray-300 text-sm mt-1">Próbáld módosítani a szűrőket</p>
+          </div>`;
         return;
       }
 
-      // Group by date
       const grouped = {};
       filtered.forEach(c => {
         if (!grouped[c.date]) grouped[c.date] = [];
@@ -211,106 +214,107 @@
       });
 
       let html = '';
-      let staggerIdx = 0;
 
       for (const [date, classes] of Object.entries(grouped)) {
         html += `
-          <div class="mb-8">
-            <h2 class="text-lg font-display font-semibold text-sage-800 mb-4 flex items-center gap-2">
-              <svg class="w-5 h-5 text-sage-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-              </svg>
-              ${formatDate(date)}
-            </h2>
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        `;
+          <div class="bg-motibro-blue text-white font-semibold text-sm sm:text-base px-4 py-2 rounded-t-lg mt-4">
+            ${formatDate(date)}
+          </div>
+          <div class="bg-white border border-t-0 border-gray-200 rounded-b-lg overflow-hidden divide-y divide-gray-100">`;
 
         for (const cls of classes) {
-          const isFull      = cls.currentBookings >= cls.maxCapacity;
-          const freeSpots   = cls.maxCapacity - cls.currentBookings;
-          const fillPercent = Math.min((cls.currentBookings / cls.maxCapacity) * 100, 100);
-          const fillColor   = fillPercent >= 90 ? 'bg-red-400' : fillPercent >= 60 ? 'bg-amber-400' : 'bg-sage-400';
-          const badgeClass  = `badge-${cls.type || 'default'}`;
-          const stagger     = `stagger-${(staggerIdx++ % 4) + 1}`;
+          const isFull    = cls.currentBookings >= cls.maxCapacity;
+          const freeSpots = cls.maxCapacity - cls.currentBookings;
+          const endTime   = getEndTime(cls.startTime, cls.duration);
 
           let userBooking = null;
           if (currentUser) {
             userBooking = await getUserBookingForClass(currentUser.uid, cls.id);
           }
 
-          const gcalUrl = generateGoogleCalendarUrl(cls);
+          let statusText, statusColor;
+          if (isFull) {
+            statusText  = 'Minden hely betelt!';
+            statusColor = 'text-red-500';
+          } else if (freeSpots <= 2) {
+            statusText  = `${freeSpots} szabad hely!`;
+            statusColor = 'text-red-500';
+          } else {
+            statusText  = `${freeSpots} szabad hely`;
+            statusColor = 'text-green-600';
+          }
 
+          let actionBtn;
+          if (currentUser) {
+            if (userBooking) {
+              actionBtn = `
+                <button class="cancel-btn px-4 py-2 text-sm font-semibold rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition whitespace-nowrap"
+                        data-booking-id="${userBooking.id}" data-class-id="${cls.id}">
+                  Lemondás
+                </button>`;
+            } else if (isFull) {
+              actionBtn = `
+                <button class="px-4 py-2 text-sm font-semibold rounded-lg bg-motibro-orange text-white hover:opacity-90 transition whitespace-nowrap" disabled>
+                  Várólistára
+                </button>`;
+            } else {
+              actionBtn = `
+                <button class="book-btn px-4 py-2 text-sm font-semibold rounded-lg bg-motibro-green text-white hover:opacity-90 transition whitespace-nowrap"
+                        data-class-id="${cls.id}">
+                  Bejelentkezés
+                </button>`;
+            }
+          } else {
+            actionBtn = `
+              <a href="login.html" class="px-4 py-2 text-sm font-semibold rounded-lg bg-motibro-green text-white hover:opacity-90 transition whitespace-nowrap inline-block text-center">
+                Bejelentkezés
+              </a>`;
+          }
+
+          // Desktop row
           html += `
-            <div class="class-card animate-fade-in-up ${stagger} opacity-0">
-              <div class="flex items-start justify-between mb-3">
-                <div>
-                  <span class="badge ${badgeClass}">${getTypeName(cls.type)}</span>
-                  <h3 class="text-lg font-semibold text-gray-800 mt-1">${escapeHtml(cls.title)}</h3>
-                </div>
-                <span class="text-2xl font-bold text-sage-600">${escapeHtml(cls.startTime)}</span>
-              </div>
-
-              ${cls.description ? `<p class="text-sm text-gray-500 mb-3">${escapeHtml(cls.description)}</p>` : ''}
-
-              <div class="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                <span class="flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div class="hidden sm:grid grid-cols-[80px_1fr_1fr_1fr_140px] gap-2 items-center px-4 py-3 hover:bg-gray-50 transition">
+              <div class="flex justify-center">
+                <div class="w-12 h-12 rounded-full bg-sage-100 flex items-center justify-center overflow-hidden">
+                  <svg class="w-7 h-7 text-sage-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
                   </svg>
-                  ${cls.duration} perc
-                </span>
-                <span class="flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                </div>
+              </div>
+              <div>
+                <div class="font-medium text-gray-800">${escapeHtml(cls.instructorName)}</div>
+              </div>
+              <div>
+                <div class="font-semibold text-gray-800">${escapeHtml(cls.startTime)} - ${endTime}</div>
+                <div class="text-xs font-semibold ${statusColor}">${statusText}</div>
+              </div>
+              <div>
+                <div class="text-gray-700">${getTypeName(cls.type)}</div>
+                ${cls.title ? `<div class="text-xs text-gray-400">${escapeHtml(cls.title)}</div>` : ''}
+              </div>
+              <div class="flex justify-end">${actionBtn}</div>
+            </div>`;
+
+          // Mobile row
+          html += `
+            <div class="sm:hidden px-4 py-3 space-y-2">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-sage-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
                   </svg>
-                  ${escapeHtml(cls.location || 'Stúdió')}
-                </span>
-              </div>
-
-              <div class="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
-                </svg>
-                <span>${escapeHtml(cls.instructorName)}</span>
-              </div>
-
-              <!-- Capacity bar -->
-              <div class="mb-4">
-                <div class="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>${isFull ? 'Betelt' : `${freeSpots} szabad hely`}</span>
-                  <span>${cls.currentBookings}/${cls.maxCapacity}</span>
                 </div>
-                <div class="capacity-bar">
-                  <div class="capacity-bar-fill ${fillColor}" style="width: ${fillPercent}%"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-800">${escapeHtml(cls.instructorName)}</div>
+                  <div class="text-sm text-gray-600">${escapeHtml(cls.startTime)} - ${endTime} · ${getTypeName(cls.type)}</div>
+                  <div class="text-xs font-semibold ${statusColor}">${statusText}</div>
                 </div>
+                <div class="flex-shrink-0">${actionBtn}</div>
               </div>
-
-              <!-- Action buttons -->
-              ${currentUser
-                ? userBooking
-                  ? `<div class="flex gap-2">
-                       <button class="btn-secondary btn-sm flex-1 cancel-btn" data-booking-id="${userBooking.id}" data-class-id="${cls.id}">
-                         Foglalás lemondása
-                       </button>
-                       <a href="${gcalUrl}" target="_blank" rel="noopener"
-                          class="gcal-link-btn inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition"
-                          title="Hozzáadás a Google Naptárhoz">
-                         ${calendarSvg}
-                       </a>
-                     </div>`
-                  : `<button class="btn-primary btn-sm w-full book-btn" data-class-id="${cls.id}" ${isFull ? 'disabled' : ''}>
-                       ${isFull ? 'Betelt' : 'Foglalás'}
-                     </button>`
-                : `<a href="login.html" class="btn-primary btn-sm w-full block text-center">
-                     Jelentkezz be a foglaláshoz
-                   </a>`
-              }
-            </div>
-          `;
+            </div>`;
         }
 
-        html += `</div></div>`;
+        html += `</div>`;
       }
 
       container.innerHTML = html;
@@ -318,7 +322,7 @@
       // Book buttons
       container.querySelectorAll('.book-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
-          const classId  = btn.dataset.classId;
+          const classId   = btn.dataset.classId;
           const classData = allClasses.find(c => c.id === classId);
           if (!classData) return;
 
@@ -327,27 +331,23 @@
 
           try {
             const bookingRef = await bookClass(currentUser, classData);
-
-            // Google Calendar API sync (if configured)
             if (isGoogleCalendarAPIConfigured()) {
               try {
                 const eventId = await addEventToGoogleCalendar(classData);
                 await saveCalendarEventId(bookingRef.id, eventId);
-                showToast('Sikeresen foglaltál! Az esemény hozzáadva a Google Naptáradhoz.', 'success');
+                showToast('Sikeresen foglaltál! Naptáreseményt is hozzáadtuk.', 'success');
               } catch (calErr) {
-                console.warn('Google Calendar sync failed:', calErr);
-                showToast('Foglalás sikeres! (Naptár szinkron nem sikerült)', 'warning');
+                showToast('Foglalás sikeres!', 'success');
               }
             } else {
               showToast('Sikeresen foglaltál!', 'success');
             }
-
             allClasses = await getUpcomingClasses();
             renderClasses();
           } catch (err) {
             showToast(err.message, 'error');
             btn.disabled = false;
-            btn.textContent = 'Foglalás';
+            btn.textContent = 'Bejelentkezés';
           }
         });
       });
@@ -357,10 +357,8 @@
         btn.addEventListener('click', async () => {
           const ok = await showConfirm('Biztosan le szeretnéd mondani a foglalásod?');
           if (!ok) return;
-
           btn.disabled = true;
           btn.textContent = 'Lemondás...';
-
           try {
             await cancelBooking(btn.dataset.bookingId, btn.dataset.classId);
             showToast('Foglalás sikeresen lemondva.', 'info');
@@ -369,20 +367,10 @@
           } catch (err) {
             showToast('Hiba a lemondás során.', 'error');
             btn.disabled = false;
-            btn.textContent = 'Foglalás lemondása';
+            btn.textContent = 'Lemondás';
           }
         });
       });
-    }
-
-    function getTypeName(type) {
-      const names = {
-        mat: 'Mat Pilates',
-        reformer: 'Reformer',
-        tower: 'Tower',
-        prenatal: 'Kismama',
-      };
-      return names[type] || escapeHtml(type) || 'Pilates';
     }
   </script>
 </body>
