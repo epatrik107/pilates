@@ -23,8 +23,8 @@ const firebaseConfig = {
 //  GOOGLE CALENDAR API CONFIGURATION (optional)
 // ============================================================
 const googleCalendarConfig = {
-  clientId: "",
-  apiKey:   "",
+  clientId: "443002743783-oihpqtepcddfobor5abprjk5gh54ra0r.apps.googleusercontent.com",
+  apiKey:   "AIzaSyD2lNojoM0RLDFFDWK4qwKOZwppGgRNp6E",
 };
 
 // ============================================================

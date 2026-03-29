@@ -141,6 +141,7 @@ export function initNavbar() {
     if (!user) {
       const guestLinks = `
         <a href="index.html"    class="nav-link">Órarend</a>
+        <a href="about.html"    class="nav-link">Rólam</a>
         <a href="login.html"    class="nav-link">Bejelentkezés</a>
         <a href="register.html" class="nav-link nav-link-primary">Regisztráció</a>
       `;
@@ -153,7 +154,8 @@ export function initNavbar() {
     const role    = profile?.role || 'user';
     const name    = profile?.name || user.displayName || 'Felhasználó';
 
-    let links = `<a href="index.html" class="nav-link">Órarend</a>`;
+    let links = `<a href="index.html" class="nav-link">Órarend</a>
+      <a href="about.html" class="nav-link">Rólam</a>`;
     if (role === 'admin') {
       links += `<a href="admin.html" class="nav-link">Admin</a>`;
     }

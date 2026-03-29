@@ -25,6 +25,7 @@ pilates/
 ├── register.html           # Regisztráció
 ├── admin.html              # Admin dashboard
 ├── profile.html            # Felhasználói profil
+├── about.html              # Bemutatkozás (Rólam)
 ├── firestore.rules         # Firestore biztonsági szabályok
 ├── .gitignore              # Git ignore + biztonsági megjegyzések
 ├── css/
