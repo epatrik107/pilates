@@ -10,7 +10,8 @@ import {
   sendPasswordResetEmail,
   verifyBeforeUpdateEmail,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  linkWithCredential
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
 import {
   doc, setDoc, getDoc, deleteDoc, updateDoc,
@@ -125,6 +126,14 @@ export async function signInWithGoogle() {
     });
   }
   return user;
+}
+
+// ── Link password provider to Google-only account ───────────
+export async function linkPasswordToAccount(password) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Nincs bejelentkezve.');
+  const credential = EmailAuthProvider.credential(user.email, password);
+  await linkWithCredential(user, credential);
 }
 
 // ── Login ───────────────────────────────────────────────────

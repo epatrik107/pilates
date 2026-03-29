@@ -68,8 +68,8 @@
         </form>
 
         <div class="position-relative my-4">
-          <hr class="text-muted">
-          <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 small text-muted">vagy</span>
+          <hr style="border-color:var(--sage-200)">
+          <span class="position-absolute top-50 start-50 translate-middle px-3 small" style="background:#fff;color:var(--sage-400)">vagy</span>
         </div>
 
         <button type="button" id="google-register-btn" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2">
@@ -92,7 +92,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
-    import { registerUser, signInWithGoogle } from './js/auth.js';
+    import { registerUser, signInWithGoogle, logoutUser } from './js/auth.js';
     import { auth, onAuthStateChanged } from './js/firebase-config.js';
     import { validatePassword, checkRateLimit, initCookieConsent } from './js/ui.js';
     initCookieConsent();
@@ -170,7 +170,8 @@
 
       try {
         await registerUser(name, email, password);
-        window.location.href = 'index.html';
+        await logoutUser();
+        window.location.href = 'login.html?verified=pending';
       } catch (err) {
         console.error('Registration error:', err);
         isRegistering = false;

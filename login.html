@@ -42,6 +42,14 @@
           </button>
 
           <p id="error-msg" class="text-danger small text-center mt-3 mb-0 d-none"></p>
+
+          <!-- Unverified email panel -->
+          <div id="verify-panel" class="d-none mt-3 p-3 bg-warning bg-opacity-10 border border-warning rounded-3 text-center">
+            <p class="small fw-medium text-dark mb-2">Az email címed még nincs megerősítve!</p>
+            <p class="small text-muted mb-2">Ellenőrizd a postaládádat (és a spam mappát).</p>
+            <button type="button" id="resend-verify-btn" class="btn btn-sm btn-warning">Megerősítő email újraküldése</button>
+            <p id="verify-msg" class="small mt-2 mb-0 d-none"></p>
+          </div>
         </form>
 
         <!-- Forgot password panel -->
@@ -56,8 +64,8 @@
         </div>
 
         <div class="position-relative my-4">
-          <hr class="text-muted">
-          <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 small text-muted">vagy</span>
+          <hr style="border-color:var(--sage-200)">
+          <span class="position-absolute top-50 start-50 translate-middle px-3 small" style="background:#fff;color:var(--sage-400)">vagy</span>
         </div>
 
         <button type="button" id="google-login-btn" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2">
@@ -80,13 +88,28 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
-    import { loginUser, resetPassword, signInWithGoogle } from './js/auth.js';
+    import { loginUser, resetPassword, signInWithGoogle, resendVerificationEmail, logoutUser } from './js/auth.js';
     import { auth, onAuthStateChanged } from './js/firebase-config.js';
     import { checkRateLimit, initCookieConsent } from './js/ui.js';
     initCookieConsent();
 
+    const verifiedParam = new URLSearchParams(window.location.search).get('verified');
+    if (verifiedParam === 'pending') {
+      const info = document.createElement('div');
+      info.className = 'alert alert-success small mb-3 text-center';
+      info.innerHTML = '<strong>Sikeres regisztráció!</strong> Ellenőrizd az email fiókodat és kattints a megerősítő linkre, utána bejelentkezhetsz.';
+      document.getElementById('login-form').before(info);
+      history.replaceState(null, '', 'login.html');
+    } else if (verifiedParam === 'required') {
+      const info = document.createElement('div');
+      info.className = 'alert alert-warning small mb-3 text-center';
+      info.innerHTML = 'Kérjük, erősítsd meg az email címedet a bejelentkezés előtt! Ellenőrizd a postaládádat.';
+      document.getElementById('login-form').before(info);
+      history.replaceState(null, '', 'login.html');
+    }
+
     onAuthStateChanged(auth, (user) => {
-      if (user) window.location.href = 'index.html';
+      if (user && user.emailVerified) window.location.href = 'index.html';
     });
 
     const form     = document.getElementById('login-form');
@@ -110,7 +133,12 @@
       try {
         const email    = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        await loginUser(email, password);
+        const user = await loginUser(email, password);
+
+        if (!user.emailVerified) {
+          showUnverifiedError();
+          return;
+        }
         window.location.href = 'index.html';
       } catch (err) {
         const messages = {
@@ -124,9 +152,40 @@
         const code = err.code || '';
         errorMsg.textContent = messages[code] || 'Hiba történt a bejelentkezés során.';
         errorMsg.classList.remove('d-none');
+        verifyPanel.classList.add('d-none');
       } finally {
         btn.disabled = false;
         btn.textContent = 'Bejelentkezés';
+      }
+    });
+
+    // ── Unverified email handling ─────────────────────────
+    const verifyPanel = document.getElementById('verify-panel');
+
+    function showUnverifiedError() {
+      errorMsg.textContent = 'Az email címed nincs megerősítve!';
+      errorMsg.classList.remove('d-none');
+      verifyPanel.classList.remove('d-none');
+    }
+
+    document.getElementById('resend-verify-btn').addEventListener('click', async () => {
+      const resendBtn = document.getElementById('resend-verify-btn');
+      const verifyMsg = document.getElementById('verify-msg');
+      resendBtn.disabled = true;
+      resendBtn.textContent = 'Küldés...';
+      verifyMsg.classList.add('d-none');
+      try {
+        await resendVerificationEmail();
+        verifyMsg.textContent = 'Email elküldve! Ellenőrizd a postaládádat.';
+        verifyMsg.className = 'small mt-2 mb-0 text-success';
+        verifyMsg.classList.remove('d-none');
+      } catch (err) {
+        verifyMsg.textContent = err.message || 'Hiba az email küldésekor.';
+        verifyMsg.className = 'small mt-2 mb-0 text-danger';
+        verifyMsg.classList.remove('d-none');
+      } finally {
+        resendBtn.disabled = false;
+        resendBtn.textContent = 'Megerősítő email újraküldése';
       }
     });
 
@@ -175,8 +234,13 @@
       const gBtn = document.getElementById('google-login-btn');
       gBtn.disabled = true;
       errorMsg.classList.add('d-none');
+      verifyPanel.classList.add('d-none');
       try {
-        await signInWithGoogle();
+        const user = await signInWithGoogle();
+        if (!user.emailVerified) {
+          showUnverifiedError();
+          return;
+        }
         window.location.href = 'index.html';
       } catch (err) {
         if (err.code !== 'auth/popup-closed-by-user') {

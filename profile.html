@@ -79,6 +79,18 @@
           <p id="email-change-msg" class="small mt-1 mb-0 hidden"></p>
         </div>
 
+        <!-- Set password for Google-only users -->
+        <div id="set-password-section" class="mb-3 pb-3 border-bottom hidden">
+          <label class="form-label small fw-medium">Jelszó beállítása</label>
+          <p class="small text-muted mb-2">Google fiókkal regisztráltál. Állíts be jelszót, hogy emailes bejelentkezéssel is elérd a fiókodat.</p>
+          <form id="set-password-form" class="d-flex flex-column gap-2" style="max-width:20rem">
+            <input type="password" id="set-pw-input" class="form-control form-control-sm" placeholder="Új jelszó (min. 8 karakter)" required minlength="8" />
+            <input type="password" id="set-pw-confirm" class="form-control form-control-sm" placeholder="Jelszó megerősítése" required minlength="8" />
+            <button type="submit" id="set-pw-btn" class="btn btn-sm btn-sage align-self-start">Jelszó beállítása</button>
+          </form>
+          <p id="set-pw-msg" class="small mt-1 mb-0 hidden"></p>
+        </div>
+
         <!-- Password change info -->
         <div id="password-section">
           <label class="form-label small fw-medium">Jelszó módosítása</label>
@@ -173,7 +185,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { initNavbar, requireAuth, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
-    import { getUserProfile, deleteAccount, reauthenticate, resendVerificationEmail, changeEmail } from './js/auth.js';
+    import { getUserProfile, deleteAccount, reauthenticate, resendVerificationEmail, changeEmail, linkPasswordToAccount, resetPassword } from './js/auth.js';
     import { auth as authInstance } from './js/firebase-config.js';
     import { googleCalendarConfig } from './js/firebase-config.js';
     import { getUserBookings, cancelBooking, saveCalendarEventId } from './js/bookings.js';
@@ -217,10 +229,12 @@
         document.getElementById('verify-banner').classList.remove('hidden');
       }
 
-      // Hide email/password sections for Google-only users
       const providers = user.providerData.map(p => p.providerId);
-      if (!providers.includes('password')) {
-        document.getElementById('email-change-section').classList.add('hidden');
+      const hasPassword = providers.includes('password');
+      const hasGoogle   = providers.includes('google.com');
+
+      if (hasGoogle && !hasPassword) {
+        document.getElementById('set-password-section').classList.remove('hidden');
         document.getElementById('password-section').classList.add('hidden');
       }
 
@@ -276,6 +290,54 @@
       }
     });
 
+    // ── Set password for Google-only users ──────────────
+    document.getElementById('set-password-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pw1 = document.getElementById('set-pw-input').value;
+      const pw2 = document.getElementById('set-pw-confirm').value;
+      const btn = document.getElementById('set-pw-btn');
+      const msg = document.getElementById('set-pw-msg');
+      msg.classList.add('hidden');
+
+      if (pw1.length < 8) {
+        msg.textContent = 'A jelszó minimum 8 karakter legyen!';
+        msg.className = 'small mt-1 mb-0 text-danger';
+        msg.classList.remove('hidden');
+        return;
+      }
+      if (pw1 !== pw2) {
+        msg.textContent = 'A két jelszó nem egyezik!';
+        msg.className = 'small mt-1 mb-0 text-danger';
+        msg.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Beállítás...';
+      try {
+        await linkPasswordToAccount(pw1);
+        msg.textContent = 'Jelszó sikeresen beállítva! Most már emailes bejelentkezéssel is eléred a fiókodat.';
+        msg.className = 'small mt-1 mb-0 text-success';
+        msg.classList.remove('hidden');
+        document.getElementById('set-password-form').reset();
+        document.getElementById('set-password-section').classList.add('hidden');
+        document.getElementById('password-section').classList.remove('hidden');
+      } catch (err) {
+        const code = err.code || '';
+        const msgs = {
+          'auth/weak-password': 'A jelszó túl gyenge.',
+          'auth/requires-recent-login': 'Biztonsági okokból jelentkezz ki, majd újra be, és próbáld újra.',
+          'auth/provider-already-linked': 'Ehhez a fiókhoz már tartozik jelszó.',
+        };
+        msg.textContent = msgs[code] || err.message || 'Hiba történt.';
+        msg.className = 'small mt-1 mb-0 text-danger';
+        msg.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Jelszó beállítása';
+      }
+    });
+
     // ── Password reset from profile ───────────────────────
     document.getElementById('send-pw-reset-btn').addEventListener('click', async () => {
       const btn = document.getElementById('send-pw-reset-btn');
@@ -287,7 +349,6 @@
       msg.classList.add('hidden');
 
       try {
-        const { resetPassword } = await import('./js/auth.js');
         await resetPassword(user.email);
         msg.textContent = 'Jelszó-visszaállító email elküldve! Ellenőrizd a postaládádat.';
         msg.className = 'small mt-1 mb-0 text-success';

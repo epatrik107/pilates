@@ -161,6 +161,10 @@ export function initNavbar() {
 export function requireAuth(callback) {
   onAuthStateChanged(auth, (user) => {
     if (!user) { window.location.href = 'login.html'; return; }
+    if (!user.emailVerified) {
+      window.location.href = 'login.html?verified=required';
+      return;
+    }
     callback(user);
   });
 }
