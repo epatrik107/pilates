@@ -81,7 +81,13 @@ export async function getUpcomingClasses() {
   const today = new Date().toISOString().split('T')[0];
   const q     = query(classesRef, where('date', '>=', today), orderBy('date'), orderBy('startTime'));
   const snap  = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const now   = new Date();
+  return snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(cls => {
+      const start = new Date(`${cls.date}T${cls.startTime || '00:00'}`);
+      return start > now;
+    });
 }
 
 // ── Get all classes (admin) ─────────────────────────────────
