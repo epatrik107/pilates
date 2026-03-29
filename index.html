@@ -101,18 +101,12 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
-    import { auth, onAuthStateChanged, googleCalendarConfig } from './js/firebase-config.js';
+    import { auth, onAuthStateChanged } from './js/firebase-config.js';
     import { getUpcomingClasses, getClassTypes } from './js/classes.js';
-    import { bookClass, getUserBookingForClass, cancelBooking, saveCalendarEventId } from './js/bookings.js';
+    import { bookClass, getUserBookingForClass, cancelBooking } from './js/bookings.js';
     import { initNavbar, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
-    import { generateGoogleCalendarUrl, initGoogleCalendarAPI, isGoogleCalendarAPIConfigured, addEventToGoogleCalendar } from './js/google-calendar.js';
 
     initNavbar();
-
-    let gcalAPIEnabled = false;
-    if (googleCalendarConfig.clientId && googleCalendarConfig.apiKey) {
-      initGoogleCalendarAPI(googleCalendarConfig.clientId, googleCalendarConfig.apiKey).then(ok => { gcalAPIEnabled = ok; }).catch(() => {});
-    }
 
     const container        = document.getElementById('classes-container');
     const filterType       = document.getElementById('filter-type');
@@ -242,10 +236,7 @@
           if (!cls) return;
           btn.disabled = true; btn.textContent = 'Foglalás...';
           try {
-            const ref = await bookClass(currentUser, cls);
-            if (isGoogleCalendarAPIConfigured()) {
-              try { const eid = await addEventToGoogleCalendar(cls); await saveCalendarEventId(ref.id, eid); } catch(e) {}
-            }
+            await bookClass(currentUser, cls);
             showToast('Sikeresen foglaltál!', 'success');
             allClasses = await getUpcomingClasses(); renderClasses();
           } catch (err) { showToast(err.message, 'error'); btn.disabled = false; btn.textContent = 'Foglalás'; }

@@ -17,6 +17,13 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    // Server-side capacity guard – prevents bookings on full classes
+    // even if a malicious client bypasses the UI/transaction logic.
+    function classHasCapacity(classId) {
+      let cls = get(/databases/$(database)/documents/classes/$(classId));
+      return cls != null && cls.data.currentBookings < cls.data.maxCapacity;
+    }
+
     match /users/{userId} {
       allow read: if isSignedIn();
       allow create: if isOwner(userId)
@@ -47,7 +54,9 @@ service cloud.firestore {
     match /bookings/{bookingId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn()
-        && request.resource.data.userId == request.auth.uid;
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.classId is string
+        && classHasCapacity(request.resource.data.classId);
       allow update: if isSignedIn()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['calendarEventId']);
       allow delete: if isSignedIn()

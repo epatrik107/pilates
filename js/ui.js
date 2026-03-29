@@ -25,7 +25,10 @@ export function validatePassword(password) {
   return { valid: errors.length === 0, errors, strength, checks };
 }
 
-// ── Client-side rate limiter ────────────────────────────────
+// ── Client-side rate limiter (UX only, not a security boundary) ─
+// This deters casual abuse but is trivially bypassed (in-memory,
+// resets on reload). Real protection comes from Firebase App Check
+// (see firebase-config.js) which validates requests server-side.
 const rateLimitMap = new Map();
 
 export function checkRateLimit(action, maxAttempts = 5, windowMs = 60000) {
