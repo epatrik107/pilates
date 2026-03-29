@@ -38,7 +38,7 @@ service cloud.firestore {
       allow update: if isOwner(userId)
         && request.resource.data.role == resource.data.role;
 
-      allow delete: if false;
+      allow delete: if isOwner(userId);
     }
 
     // ═══ CLASSES ═════════════════════════════════════════════

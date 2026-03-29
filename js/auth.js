@@ -2,10 +2,14 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  updateProfile
+  updateProfile,
+  deleteUser,
+  reauthenticateWithCredential,
+  EmailAuthProvider
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
 import {
-  doc, setDoc, getDoc
+  doc, setDoc, getDoc, deleteDoc,
+  collection, query, where, getDocs, runTransaction
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 
@@ -102,4 +106,40 @@ export async function getUserProfile(uid) {
 export async function isAdmin(uid) {
   const profile = await getUserProfile(uid);
   return profile?.role === 'admin';
+}
+
+// ── Re-authenticate before sensitive operations ─────────────
+export async function reauthenticate(user, password) {
+  const credential = EmailAuthProvider.credential(user.email, password);
+  await reauthenticateWithCredential(user, credential);
+}
+
+// ── Delete account ──────────────────────────────────────────
+// 1) Cancel all bookings (decrement class counters atomically)
+// 2) Delete profile document
+// 3) Delete Firebase Auth account
+export async function deleteAccount(user) {
+  const uid = user.uid;
+
+  const bookingsSnap = await getDocs(
+    query(collection(db, 'bookings'), where('userId', '==', uid))
+  );
+
+  for (const bookingDoc of bookingsSnap.docs) {
+    const data = bookingDoc.data();
+    const classRef = doc(db, 'classes', data.classId);
+    const bookingRef = doc(db, 'bookings', bookingDoc.id);
+
+    await runTransaction(db, async (transaction) => {
+      const classSnap = await transaction.get(classRef);
+      transaction.delete(bookingRef);
+      if (classSnap.exists()) {
+        const current = classSnap.data().currentBookings || 0;
+        transaction.update(classRef, { currentBookings: Math.max(0, current - 1) });
+      }
+    });
+  }
+
+  await deleteDoc(doc(db, 'users', uid));
+  await deleteUser(user);
 }

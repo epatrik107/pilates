@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Pilates Studio profilom – Foglalásaim és fiókom kezelése." />
+  <meta name="robots" content="noindex, nofollow" />
   <title>Profilom – Pilates Studio</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
@@ -55,6 +57,56 @@
 
     <div id="bookings-container">
     </div>
+
+    <hr class="my-5 border-danger-subtle">
+
+    <div class="card border border-danger-subtle shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+          <div>
+            <h2 class="h5 fw-semibold text-danger mb-1">Fiók törlése</h2>
+            <p class="small text-muted mb-0">
+              A fiókod és minden hozzá tartozó adat (foglalások, profil) véglegesen törlődik. Ez a művelet nem vonható vissza.
+            </p>
+          </div>
+          <button id="delete-account-btn" type="button" class="btn btn-outline-danger flex-shrink-0 d-inline-flex align-items-center gap-2">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+            </svg>
+            Fiók törlése
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete account confirmation modal -->
+    <div id="delete-modal" class="modal-backdrop-custom hidden" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+      <div class="card shadow-lg border" style="max-width: 28rem; width: 100%;">
+        <div class="card-body p-4">
+          <h3 id="delete-modal-title" class="h5 fw-semibold text-danger mb-2">Fiók végleges törlése</h3>
+          <p class="small text-muted mb-3">
+            Ez a művelet <strong>visszavonhatatlan</strong>. Minden adatod (profil, foglalások) véglegesen törlődik.
+            A megerősítéshez add meg a jelszavadat.
+          </p>
+          <form id="delete-form">
+            <div class="mb-3">
+              <label for="delete-password" class="form-label small">Jelszó</label>
+              <input type="password" id="delete-password" class="form-control" placeholder="Jelszó megerősítése" required />
+            </div>
+            <p id="delete-error" class="text-danger small mb-3 hidden"></p>
+            <div class="d-flex gap-2 justify-content-end">
+              <button type="button" id="delete-cancel-btn" class="btn btn-sage-outline">Mégsem</button>
+              <button type="submit" id="delete-confirm-btn" class="btn btn-danger d-inline-flex align-items-center gap-2">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+                Véglegesen törlöm
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </main>
 
   <footer class="border-top py-4 mt-5">
@@ -68,7 +120,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { initNavbar, requireAuth, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
-    import { getUserProfile } from './js/auth.js';
+    import { getUserProfile, deleteAccount, reauthenticate } from './js/auth.js';
     import { googleCalendarConfig } from './js/firebase-config.js';
     import { getUserBookings, cancelBooking, saveCalendarEventId } from './js/bookings.js';
     import {
@@ -256,6 +308,69 @@
         });
       });
     }
+
+    // ── Delete account flow ────────────────────────────────────
+    const deleteModal      = document.getElementById('delete-modal');
+    const deleteForm       = document.getElementById('delete-form');
+    const deleteError      = document.getElementById('delete-error');
+    const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+
+    function openDeleteModal() {
+      deleteForm.reset();
+      deleteError.classList.add('hidden');
+      deleteConfirmBtn.disabled = false;
+      deleteConfirmBtn.innerHTML = `
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+        </svg>
+        Véglegesen törlöm`;
+      deleteModal.classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      deleteModal.classList.add('hidden');
+    }
+
+    document.getElementById('delete-account-btn').addEventListener('click', openDeleteModal);
+    document.getElementById('delete-cancel-btn').addEventListener('click', closeDeleteModal);
+    deleteModal.addEventListener('click', (e) => { if (e.target === deleteModal) closeDeleteModal(); });
+
+    deleteForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      deleteError.classList.add('hidden');
+
+      const password = document.getElementById('delete-password').value;
+      if (!password) return;
+
+      deleteConfirmBtn.disabled = true;
+      deleteConfirmBtn.textContent = 'Törlés folyamatban...';
+
+      try {
+        const { auth } = await import('./js/firebase-config.js');
+        const user = auth.currentUser;
+
+        await reauthenticate(user, password);
+        await deleteAccount(user);
+        window.location.href = 'index.html';
+      } catch (err) {
+        deleteConfirmBtn.disabled = false;
+        deleteConfirmBtn.innerHTML = `
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+          </svg>
+          Véglegesen törlöm`;
+
+        const messages = {
+          'auth/wrong-password':        'Hibás jelszó.',
+          'auth/invalid-credential':    'Hibás jelszó.',
+          'auth/too-many-requests':     'Túl sok próbálkozás. Próbáld újra később.',
+          'auth/network-request-failed': 'Hálózati hiba. Ellenőrizd az internetkapcsolatod.',
+        };
+        const code = err.code || '';
+        deleteError.textContent = messages[code] || err.message || 'Hiba történt a fiók törlése során.';
+        deleteError.classList.remove('hidden');
+      }
+    });
   </script>
 </body>
 </html>
