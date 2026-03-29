@@ -143,12 +143,12 @@ export async function getUserPastBookings(userId) {
   const q     = query(
     bookingsRef,
     where('userId', '==', userId),
-    where('classDate', '<', today),
-    orderBy('classDate', 'desc'),
-    orderBy('classStartTime', 'desc')
+    where('classDate', '<', today)
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => b.classDate.localeCompare(a.classDate) || (b.classStartTime || '').localeCompare(a.classStartTime || ''));
 }
 
 // ── Set attendance status (admin) ────────────────────────────
