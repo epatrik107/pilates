@@ -87,29 +87,27 @@
             <p class="fw-medium mb-1">Az árlista hamarosan elérhető!</p>
             <p class="small">Kérjük, nézz vissza később.</p>
           </div>`;
-        return;
-      }
-
-      let html = '<div class="row g-4">';
-      for (const item of items) {
-        html += `
-          <div class="col-12 col-sm-6 col-lg-4">
-            <div class="card border shadow-sm h-100 overflow-hidden">
-              <div class="card-body p-4 d-flex flex-column">
-                <h3 class="h5 fw-semibold mb-2" style="color:var(--sage-800)">${escapeHtml(item.title)}</h3>
-                ${item.description ? `<p class="text-muted small flex-grow-1 mb-3">${escapeHtml(item.description)}</p>` : '<div class="flex-grow-1"></div>'}
-                <div class="d-flex align-items-baseline gap-1 mt-auto">
-                  <span class="h3 fw-bold mb-0" style="color:var(--sage-700)">${escapeHtml(item.price)}</span>
-                  ${item.unit ? `<span class="text-muted small">/ ${escapeHtml(item.unit)}</span>` : ''}
+      } else {
+        let html = '<div class="row g-4">';
+        for (const item of items) {
+          html += `
+            <div class="col-12 col-sm-6 col-lg-4">
+              <div class="card border shadow-sm h-100 overflow-hidden">
+                <div class="card-body p-4 d-flex flex-column">
+                  <h3 class="h5 fw-semibold mb-2" style="color:var(--sage-800)">${escapeHtml(item.title)}</h3>
+                  ${item.description ? `<p class="text-muted small flex-grow-1 mb-3">${escapeHtml(item.description)}</p>` : '<div class="flex-grow-1"></div>'}
+                  <div class="d-flex align-items-baseline gap-1 mt-auto">
+                    <span class="h3 fw-bold mb-0" style="color:var(--sage-700)">${escapeHtml(item.price)}</span>
+                    ${item.unit ? `<span class="text-muted small">/ ${escapeHtml(item.unit)}</span>` : ''}
+                  </div>
                 </div>
+                ${item.highlighted ? '<div style="height:4px;background:var(--sage-500)"></div>' : ''}
               </div>
-              ${item.highlighted ? '<div style="height:4px;background:var(--sage-500)"></div>' : ''}
-            </div>
-          </div>`;
+            </div>`;
+        }
+        html += '</div>';
+        container.innerHTML = html;
       }
-      html += '</div>';
-
-      container.innerHTML = html;
 
     } catch (err) {
       container.innerHTML = `<div class="text-center py-5 text-danger"><p class="fw-medium">Hiba az árlista betöltése során</p><p class="small">${escapeHtml(err.message)}</p></div>`;
