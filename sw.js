@@ -1,7 +1,8 @@
-const CACHE_NAME = 'pilates-v5';
+const CACHE_NAME = 'balance-v2';
 const STATIC_ASSETS = [
   'index.html',
   'about.html',
+  'bookings.html',
   'prices.html',
   'login.html',
   'register.html',

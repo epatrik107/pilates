@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Balance Studio profilom – Foglalásaim és fiókom kezelése." />
+  <meta name="description" content="Balance Studio profilom – Fiókom beállításai." />
   <meta name="robots" content="noindex, nofollow" />
   <title>Profilom – Balance Studio</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#6b8a53" />
-  <script src="https://apis.google.com/js/api.js" async defer></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link rel="icon" href="img/icon-192.png" type="image/png" />
 </head>
 <body>
 
@@ -101,28 +100,6 @@
       </div>
     </div>
 
-    <div class="mb-3">
-      <h2 class="h5 font-display fw-semibold d-flex align-items-center gap-2 mb-0" style="color: var(--sage-800);">
-        <svg class="text-sage flex-shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-        </svg>
-        Közelgő foglalásaim
-      </h2>
-    </div>
-
-    <div id="bookings-container">
-    </div>
-
-    <div class="mb-3 mt-5">
-      <h2 class="h5 font-display fw-semibold d-flex align-items-center gap-2 mb-0" style="color: var(--sage-800);">
-        <svg class="text-sage flex-shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        Várólistáim
-      </h2>
-    </div>
-    <div id="waitlist-container"></div>
-
     <hr class="my-5 border-danger-subtle">
 
     <div class="card border border-danger-subtle shadow-sm">
@@ -184,25 +161,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
-    import { initNavbar, requireAuth, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
+    import { initNavbar, requireAuth, showToast, showConfirm, escapeHtml } from './js/ui.js';
     import { getUserProfile, deleteAccount, reauthenticate, resendVerificationEmail, changeEmail, linkPasswordToAccount, resetPassword } from './js/auth.js';
     import { auth as authInstance } from './js/firebase-config.js';
-    import { googleCalendarConfig } from './js/firebase-config.js';
-    import { getUserBookings, cancelBooking, saveCalendarEventId } from './js/bookings.js';
-    import { getUserWaitlistEntries, leaveWaitlist } from './js/waitlist.js';
-    import {
-      generateGoogleCalendarUrl,
-      initGoogleCalendarAPI,
-      isGoogleCalendarAPIConfigured,
-      addEventToGoogleCalendar
-    } from './js/google-calendar.js';
 
     initNavbar();
-
-    // Google Calendar API initialization
-    if (googleCalendarConfig.clientId && googleCalendarConfig.apiKey) {
-      initGoogleCalendarAPI(googleCalendarConfig.clientId, googleCalendarConfig.apiKey).catch(() => {});
-    }
 
     requireAuth(async (user) => {
       const profile = await getUserProfile(user.uid);
@@ -238,8 +201,6 @@
         document.getElementById('password-section').classList.add('hidden');
       }
 
-      loadBookings(user.uid);
-      loadWaitlist(user.uid);
     });
 
     // ── Resend verification email ─────────────────────────
@@ -362,193 +323,6 @@
         btn.textContent = 'Jelszó-visszaállító email küldése';
       }
     });
-
-    async function loadBookings(userId) {
-      const container = document.getElementById('bookings-container');
-      showLoading(container);
-
-      try {
-        const bookings = await getUserBookings(userId);
-        renderBookings(bookings, container);
-      } catch (err) {
-        container.innerHTML = `
-          <div class="text-center py-5 text-danger">
-            <p class="fw-medium mb-1">Hiba a foglalások betöltése során</p>
-            <p class="small mb-0">${escapeHtml(err.message)}</p>
-          </div>`;
-      }
-    }
-
-    function renderBookings(bookings, container) {
-      if (bookings.length === 0) {
-        container.innerHTML = `
-          <div class="text-center py-5 px-3">
-            <svg class="text-muted mb-3 opacity-50" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-            </svg>
-            <p class="text-muted fw-medium mb-1">Nincs közelgő foglalásod</p>
-            <p class="small text-muted mb-0">
-              Nézd meg az <a href="index.html" class="text-sage">órarendet</a> és foglalj helyet!
-            </p>
-          </div>`;
-        return;
-      }
-
-      const calIcon = `<svg class="flex-shrink-0" style="width:1rem;height:1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-      </svg>`;
-
-      container.innerHTML = `
-        <div>
-          ${bookings.map((b) => {
-            const gcalUrl = generateGoogleCalendarUrl({
-              title: b.classTitle,
-              date: b.classDate,
-              startTime: b.classStartTime,
-              duration: b.classDuration || 60,
-              location: b.classLocation || 'Balance Studio',
-              instructorName: b.instructorName || '',
-              description: b.classDescription || '',
-            });
-            const hasCalEvent = !!b.calendarEventId;
-
-            return `
-            <div class="card border p-3 mb-2 animate-fade-in-up">
-              <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3">
-                <div class="flex-grow-1">
-                <h3 class="fw-semibold mb-1 mb-sm-0">${escapeHtml(b.classTitle)}</h3>
-                <p class="small text-muted mb-0">
-                  ${formatDate(b.classDate)} &middot; ${escapeHtml(b.classStartTime)}
-                    ${b.classLocation ? ` &middot; ${escapeHtml(b.classLocation)}` : ''}
-                  </p>
-                  ${hasCalEvent ? '<p class="small text-success mt-1 mb-0 d-flex align-items-center gap-1">' + calIcon + ' Szinkronizálva a Google Naptárral</p>' : ''}
-                </div>
-                <div class="d-flex align-items-center gap-2 flex-shrink-0 align-self-start">
-                  ${!hasCalEvent
-                    ? isGoogleCalendarAPIConfigured()
-                      ? `<button type="button" class="gcal-sync-btn btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
-                                 data-booking-id="${b.id}"
-                                 data-class-title="${b.classTitle}"
-                                 data-class-date="${b.classDate}"
-                                 data-class-time="${b.classStartTime}"
-                                 data-class-duration="${b.classDuration || 60}"
-                                 data-class-location="${b.classLocation || ''}"
-                                 data-instructor="${b.instructorName || ''}"
-                                 data-description="${b.classDescription || ''}"
-                                 title="Szinkronizálás a Google Naptárral">
-                          ${calIcon} Naptár
-                        </button>`
-                      : `<a href="${gcalUrl}" target="_blank" rel="noopener"
-                            class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
-                            title="Hozzáadás a Google Naptárhoz">
-                          ${calIcon} Naptár
-                        </a>`
-                    : ''
-                  }
-                  <button type="button" class="cancel-booking-btn btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
-                          data-booking-id="${b.id}" data-class-id="${b.classId}">
-                    <svg class="flex-shrink-0" style="width:1rem;height:1rem" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Lemondás
-                  </button>
-                </div>
-              </div>
-            </div>`;
-          }).join('')}
-        </div>
-      `;
-
-      // Google Calendar API sync buttons
-      container.querySelectorAll('.gcal-sync-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          btn.disabled = true;
-          btn.textContent = 'Szinkron...';
-
-          try {
-            const classData = {
-              title: btn.dataset.classTitle,
-              date: btn.dataset.classDate,
-              startTime: btn.dataset.classTime,
-              duration: parseInt(btn.dataset.classDuration) || 60,
-              location: btn.dataset.classLocation,
-              instructorName: btn.dataset.instructor,
-              description: btn.dataset.description,
-            };
-            const eventId = await addEventToGoogleCalendar(classData);
-            await saveCalendarEventId(btn.dataset.bookingId, eventId);
-            showToast('Esemény hozzáadva a Google Naptárhoz!', 'success');
-
-            const user = (await import('./js/firebase-config.js')).auth.currentUser;
-            loadBookings(user.uid);
-          } catch (err) {
-            showToast('Naptár szinkron hiba: ' + err.message, 'error');
-            btn.disabled = false;
-            btn.innerHTML = `${calIcon} Naptár`;
-          }
-        });
-      });
-
-      // Cancel buttons
-      container.querySelectorAll('.cancel-booking-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const ok = await showConfirm('Biztosan le szeretnéd mondani ezt a foglalást?');
-          if (!ok) return;
-
-          btn.disabled = true;
-          btn.textContent = 'Lemondás...';
-
-          try {
-            await cancelBooking(btn.dataset.bookingId, btn.dataset.classId);
-            showToast('Foglalás sikeresen lemondva.', 'info');
-            const user = (await import('./js/firebase-config.js')).auth.currentUser;
-            loadBookings(user.uid);
-          } catch (err) {
-            showToast('Hiba a lemondás során: ' + err.message, 'error');
-            btn.disabled = false;
-            btn.textContent = 'Lemondás';
-          }
-        });
-      });
-    }
-
-    // ── Waitlist ────────────────────────────────────────────────
-    async function loadWaitlist(userId) {
-      const wlContainer = document.getElementById('waitlist-container');
-      try {
-        const entries = await getUserWaitlistEntries(userId);
-        if (entries.length === 0) {
-          wlContainer.innerHTML = `<p class="text-muted small">Nincs aktív várólistás feliratkozásod.</p>`;
-          return;
-        }
-        wlContainer.innerHTML = entries.map(e => `
-          <div class="card border p-3 mb-2">
-            <div class="d-flex align-items-center justify-content-between">
-              <div>
-                <p class="fw-semibold mb-0">${escapeHtml(e.classTitle)}</p>
-                <p class="small text-muted mb-0">${formatDate(e.classDate)}</p>
-              </div>
-              <button class="wl-leave-btn btn btn-sm btn-outline-secondary" data-wl-id="${e.id}">Leiratkozás</button>
-            </div>
-          </div>
-        `).join('');
-
-        wlContainer.querySelectorAll('.wl-leave-btn').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            if (!await showConfirm('Leiratkozol a várólistáról?')) return;
-            btn.disabled = true;
-            try {
-              await leaveWaitlist(btn.dataset.wlId);
-              showToast('Leiratkoztál a várólistáról.', 'info');
-              const user = (await import('./js/firebase-config.js')).auth.currentUser;
-              loadWaitlist(user.uid);
-            } catch (err) { showToast('Hiba: ' + err.message, 'error'); btn.disabled = false; }
-          });
-        });
-      } catch (err) {
-        wlContainer.innerHTML = `<p class="text-muted small">Várólisták betöltése sikertelen.</p>`;
-      }
-    }
 
     // ── Delete account flow ────────────────────────────────────
     const deleteModal      = document.getElementById('delete-modal');

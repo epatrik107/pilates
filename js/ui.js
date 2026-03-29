@@ -137,7 +137,7 @@ export function initNavbar() {
       <li class="nav-item"><a href="index.html" class="nav-link">Órarend</a></li>
       <li class="nav-item"><a href="prices.html" class="nav-link">Árlista</a></li>
       <li class="nav-item"><a href="about.html" class="nav-link">Rólam</a></li>
-      ${role === 'admin' ? '<li class="nav-item"><a href="admin.html" class="nav-link">Admin</a></li>' : ''}
+      ${role === 'admin' ? '<li class="nav-item"><a href="admin.html" class="nav-link">Admin</a></li>' : '<li class="nav-item"><a href="bookings.html" class="nav-link">Foglalásaim</a></li>'}
       <li class="nav-item"><a href="profile.html" class="nav-link">Profilom</a></li>`;
 
     navRight.innerHTML = `

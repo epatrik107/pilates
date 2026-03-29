@@ -161,6 +161,23 @@ a.text-sage:hover { color: var(--sage-700); }
   color: var(--sage-700);
 }
 
+/* ── Password toggle ─────────────────────────────────────── */
+.input-group .pw-toggle {
+  background: transparent;
+  border: 1px solid #dee2e6;
+  border-left: 0;
+  color: var(--sage-400);
+  padding: 0 0.75rem;
+  display: flex; align-items: center;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.input-group .pw-toggle:hover { color: var(--sage-700); }
+.input-group .form-control:focus ~ .pw-toggle {
+  border-color: var(--sage-400);
+  box-shadow: none;
+}
+
 /* ── Misc helpers ────────────────────────────────────────── */
 .hidden { display: none !important; }
 .text-sage { color: var(--sage-600); }

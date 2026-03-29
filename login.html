@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/style.css" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#6b8a53" />
+  <link rel="icon" href="img/icon-192.png" type="image/png" />
 </head>
 <body class="auth-page d-flex align-items-center justify-content-center px-3">
 
@@ -37,7 +38,18 @@
               <label for="password" class="form-label mb-0">Jelszó</label>
               <button type="button" id="forgot-pw-link" class="btn btn-link btn-sm p-0 text-sage text-decoration-none" style="font-size:0.8rem">Elfelejtett jelszó?</button>
             </div>
-            <input type="password" class="form-control mt-1" id="password" placeholder="••••••••" required />
+            <div class="input-group mt-1">
+              <input type="password" class="form-control" id="password" placeholder="••••••••" required />
+              <button type="button" class="pw-toggle" tabindex="-1" aria-label="Jelszó megjelenítése">
+                <svg class="pw-eye-open" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.01 9.96 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.01-9.964-7.178z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <svg class="pw-eye-closed hidden" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <button type="submit" id="login-btn" class="btn btn-sage w-100">
@@ -230,6 +242,17 @@
         forgotBtn.disabled = false;
         forgotBtn.textContent = 'Küldés';
       }
+    });
+
+    // ── Password visibility toggle ─────────────────────────
+    document.querySelectorAll('.pw-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const input = btn.parentElement.querySelector('input');
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btn.querySelector('.pw-eye-open').classList.toggle('hidden', isHidden);
+        btn.querySelector('.pw-eye-closed').classList.toggle('hidden', !isHidden);
+      });
     });
 
     // ── Google Sign-In ───────────────────────────────────
