@@ -13,7 +13,7 @@ import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com
 //  PRODUCTION: Restrict this key in Google Cloud Console →
 //  APIs & Services → Credentials → Edit key → Application
 //  restrictions → HTTP referrers → add your domain(s)
-//  (e.g. pilatesstudio.hu/*, *.pilatesstudio.hu/*)
+//  (e.g. balance-studio.hu/*, *.balance-studio.hu/*)
 //  This prevents third parties from using your key.
 // ============================================================
 const firebaseConfig = {
