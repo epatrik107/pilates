@@ -9,6 +9,9 @@
 .env.production
 .env*.local
 
+# Project documentation (keep local only)
+README.md
+
 # Editor and system files
 .DS_Store
 Thumbs.db
