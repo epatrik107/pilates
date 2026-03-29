@@ -42,6 +42,7 @@ export async function createClass(data) {
     currentBookings: 0,
     instructorId:    data.instructorId,
     instructorName:  data.instructorName,
+    instructorPhoto: data.instructorPhoto || '',
     description:     data.description || '',
     location:        data.location || 'Stúdió',
     createdAt:       serverTimestamp()
@@ -112,6 +113,7 @@ export async function cloneWeekClasses(sourceMonday, instructorId, instructorNam
       currentBookings: 0,
       instructorId:    instructorId || src.instructorId,
       instructorName:  instructorName || src.instructorName,
+      instructorPhoto: src.instructorPhoto || '',
       description:     src.description || '',
       location:        src.location || '',
       createdAt:       serverTimestamp()
@@ -136,6 +138,7 @@ export async function createRecurringClasses(data, weeks) {
       currentBookings: 0,
       instructorId:    data.instructorId,
       instructorName:  data.instructorName,
+      instructorPhoto: data.instructorPhoto || '',
       description:     data.description || '',
       location:        data.location || 'Stúdió',
       createdAt:       serverTimestamp()

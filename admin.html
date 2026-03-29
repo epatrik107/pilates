@@ -62,6 +62,30 @@
       </div>
     </div>
 
+    <!-- Instructor profile photo -->
+    <div class="card border shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h2 class="h6 fw-semibold mb-3 d-flex align-items-center gap-2" style="color:var(--sage-700)">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+          </svg>
+          Profilkép
+        </h2>
+        <div class="d-flex align-items-center gap-3">
+          <img id="admin-photo-preview" src="img/szonja.png" class="instructor-avatar" width="64" height="64" style="width:64px;height:64px;min-width:64px;max-width:64px;min-height:64px;max-height:64px" alt="Profilkép">
+          <div>
+            <label for="photo-upload" class="btn btn-sm btn-sage-outline d-inline-flex align-items-center gap-1 mb-1" style="cursor:pointer">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+              Kép feltöltése
+            </label>
+            <input type="file" id="photo-upload" accept="image/*" class="hidden">
+            <p class="small text-muted mb-0">Az órarendben is ez jelenik meg. Max 200×200px JPEG.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Class types management -->
     <div class="card border shadow-sm mb-4">
       <div class="card-body p-4">
@@ -241,6 +265,7 @@
     import { getBookingsForClass, setAttendance } from './js/bookings.js';
     import { getWaitlistForClass } from './js/waitlist.js';
     import { exportBookingsCSV, exportUsersCSV } from './js/export.js';
+    import { updateUserPhoto } from './js/auth.js';
 
     initNavbar();
 
@@ -251,6 +276,9 @@
     requireAdmin(async (user, profile) => {
       adminUser    = user;
       adminProfile = profile;
+      if (profile?.photoURL) {
+        document.getElementById('admin-photo-preview').src = profile.photoURL;
+      }
       classTypes   = await getClassTypes();
       renderTypesBadges();
       populateTypeSelect();
@@ -334,6 +362,7 @@
         description:    document.getElementById('class-description').value.trim(),
         instructorId:   adminUser.uid,
         instructorName: adminProfile.name || adminUser.displayName || 'Edző',
+        instructorPhoto: adminProfile.photoURL || '',
       };
 
       try {
@@ -771,6 +800,45 @@
         showToast(`${count} felhasználó exportálva.`, 'success');
       } catch (err) { showToast('Export hiba: ' + err.message, 'error'); }
     });
+
+    // ── Profile photo upload ────────────────────────────
+    document.getElementById('photo-upload').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { showToast('Csak képfájl tölthető fel!', 'error'); return; }
+
+      try {
+        const dataURL = await resizeImage(file, 200);
+        document.getElementById('admin-photo-preview').src = dataURL;
+        await updateUserPhoto(adminUser.uid, dataURL);
+        adminProfile.photoURL = dataURL;
+        showToast('Profilkép frissítve!', 'success');
+      } catch (err) {
+        showToast('Hiba a képfeltöltés során: ' + err.message, 'error');
+      }
+    });
+
+    function resizeImage(file, maxSize) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            if (w > h) { if (w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; } }
+            else       { if (h > maxSize) { w = Math.round(w * maxSize / h); h = maxSize; } }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
+          };
+          img.onerror = () => reject(new Error('Érvénytelen kép'));
+          img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error('Nem sikerült beolvasni'));
+        reader.readAsDataURL(file);
+      });
+    }
   </script>
   <script>
     if ('serviceWorker' in navigator) {

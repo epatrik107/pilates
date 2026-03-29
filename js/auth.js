@@ -8,7 +8,7 @@ import {
   EmailAuthProvider
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
 import {
-  doc, setDoc, getDoc, deleteDoc,
+  doc, setDoc, getDoc, deleteDoc, updateDoc,
   collection, query, where, getDocs, runTransaction
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
@@ -100,6 +100,11 @@ export async function getUserProfile(uid) {
     console.warn('getUserProfile timeout/error:', err.message);
     return null;
   }
+}
+
+// ── Update user photo (Base64 data URL) ─────────────────────
+export async function updateUserPhoto(uid, photoURL) {
+  await updateDoc(doc(db, 'users', uid), { photoURL });
 }
 
 // ── Role check ──────────────────────────────────────────────
