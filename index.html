@@ -176,7 +176,7 @@
           if (currentUser) {
             if (userBooking) actionBtn = `<button class="btn btn-sm btn-outline-secondary cancel-btn" data-booking-id="${userBooking.id}" data-class-id="${cls.id}">Lemondás</button>`;
             else if (isFull) actionBtn = `<button class="btn btn-sm btn-motibro-orange" disabled>Várólistára</button>`;
-            else actionBtn = `<button class="btn btn-sm btn-motibro-green book-btn" data-class-id="${cls.id}">Bejelentkezés</button>`;
+            else actionBtn = `<button class="btn btn-sm btn-motibro-green book-btn" data-class-id="${cls.id}">Foglalás</button>`;
           } else {
             actionBtn = `<a href="login.html" class="btn btn-sm btn-motibro-green">Bejelentkezés</a>`;
           }
