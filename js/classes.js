@@ -26,6 +26,9 @@ export async function createClass(data) {
 
 // ── Update class (admin) ────────────────────────────────────
 export async function updateClass(classId, data) {
+  if (data.duration != null) data.duration = parseInt(data.duration) || 60;
+  if (data.maxCapacity != null) data.maxCapacity = parseInt(data.maxCapacity) || 10;
+  if (data.currentBookings != null) data.currentBookings = parseInt(data.currentBookings) || 0;
   const ref = doc(db, 'classes', classId);
   return await updateDoc(ref, data);
 }

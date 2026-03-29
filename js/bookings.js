@@ -44,7 +44,7 @@ export async function bookClass(user, classData) {
       classTitle:       classData.title,
       classDate:        classData.date,
       classStartTime:   classData.startTime,
-      classDuration:    classData.duration || 60,
+      classDuration:    parseInt(classData.duration) || 60,
       classLocation:    classData.location || '',
       instructorName:   classData.instructorName || '',
       classDescription: classData.description || '',

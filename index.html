@@ -127,7 +127,7 @@
 
     function getEndTime(s, dur) {
       const [h, m] = s.split(':').map(Number);
-      const t = h * 60 + m + (dur || 60);
+      const t = h * 60 + m + (parseInt(dur) || 60);
       return `${String(Math.floor(t/60)%24).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
     }
 
@@ -219,7 +219,7 @@
             }
             showToast('Sikeresen foglaltál!', 'success');
             allClasses = await getUpcomingClasses(); renderClasses();
-          } catch (err) { showToast(err.message, 'error'); btn.disabled = false; btn.textContent = 'Bejelentkezés'; }
+          } catch (err) { showToast(err.message, 'error'); btn.disabled = false; btn.textContent = 'Foglalás'; }
         });
       });
 
