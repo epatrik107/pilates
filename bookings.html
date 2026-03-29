@@ -55,6 +55,15 @@
     </div>
     <div id="waitlist-container"></div>
 
+    <div class="mt-5" id="past-bookings-section" style="display:none">
+      <details>
+        <summary class="h5 font-display fw-semibold text-muted mb-3 user-select-none" style="cursor:pointer">
+          Korábbi foglalásaim (<span id="past-count">0</span>)
+        </summary>
+        <div id="past-bookings-container" class="opacity-75"></div>
+      </details>
+    </div>
+
   </main>
 
   <footer class="border-top py-4 mt-5">
@@ -71,7 +80,7 @@
     import { getUserProfile } from './js/auth.js';
     import { auth as authInstance } from './js/firebase-config.js';
     import { googleCalendarConfig } from './js/firebase-config.js';
-    import { getUserBookings, cancelBooking, saveCalendarEventId } from './js/bookings.js';
+    import { getUserBookings, getUserPastBookings, cancelBooking, saveCalendarEventId } from './js/bookings.js';
     import { getUserWaitlistEntries, leaveWaitlist } from './js/waitlist.js';
     import {
       generateGoogleCalendarUrl,
@@ -94,6 +103,7 @@
       }
       loadBookings(user.uid);
       loadWaitlist(user.uid);
+      loadPastBookings(user.uid);
     });
 
     async function loadBookings(userId) {
@@ -282,6 +292,38 @@
       } catch (err) {
         wlContainer.innerHTML = `<p class="text-muted small">Várólisták betöltése sikertelen.</p>`;
       }
+    }
+
+    async function loadPastBookings(userId) {
+      try {
+        const past = await getUserPastBookings(userId);
+        if (past.length === 0) return;
+
+        document.getElementById('past-bookings-section').style.display = '';
+        document.getElementById('past-count').textContent = past.length;
+
+        const container = document.getElementById('past-bookings-container');
+        container.innerHTML = past.map(b => `
+          <div class="card border p-3 mb-2">
+            <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
+              <div class="flex-grow-1">
+                <h3 class="fw-semibold mb-0 small">${escapeHtml(b.classTitle)}</h3>
+                <p class="small text-muted mb-0">
+                  ${formatDate(b.classDate)} &middot; ${escapeHtml(b.classStartTime || '')}
+                  ${b.classLocation ? ` &middot; ${escapeHtml(b.classLocation)}` : ''}
+                </p>
+              </div>
+              <div class="flex-shrink-0">
+                ${b.attended === true
+                  ? '<span class="badge bg-success">Megjelent</span>'
+                  : b.attended === false
+                    ? '<span class="badge bg-danger">Nem jelent meg</span>'
+                    : '<span class="badge bg-secondary">Jelöletlen</span>'}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) { /* silent */ }
     }
   </script>
   <script>

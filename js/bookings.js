@@ -119,14 +119,33 @@ export async function getUserBookingForClass(userId, classId) {
 }
 
 // ── Get all upcoming bookings for a user ────────────────────
+function localToday() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export async function getUserBookings(userId) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = localToday();
   const q     = query(
     bookingsRef,
     where('userId', '==', userId),
     where('classDate', '>=', today),
     orderBy('classDate'),
     orderBy('classStartTime')
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// ── Get past bookings for a user ─────────────────────────────
+export async function getUserPastBookings(userId) {
+  const today = localToday();
+  const q     = query(
+    bookingsRef,
+    where('userId', '==', userId),
+    where('classDate', '<', today),
+    orderBy('classDate', 'desc'),
+    orderBy('classStartTime', 'desc')
   );
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));

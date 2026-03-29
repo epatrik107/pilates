@@ -77,8 +77,13 @@ export async function deleteClass(classId) {
 }
 
 // ── Get upcoming classes ────────────────────────────────────
+function localToday() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export async function getUpcomingClasses() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = localToday();
   const q     = query(classesRef, where('date', '>=', today), orderBy('date'), orderBy('startTime'));
   const snap  = await getDocs(q);
   const now   = new Date();

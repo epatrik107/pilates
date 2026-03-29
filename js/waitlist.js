@@ -32,7 +32,8 @@ export async function getUserWaitlistEntry(userId, classId) {
 }
 
 export async function getUserWaitlistEntries(userId) {
-  const today = new Date().toISOString().split('T')[0];
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const q = query(
     waitlistRef,
     where('userId', '==', userId),
