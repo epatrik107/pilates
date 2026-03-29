@@ -5,7 +5,12 @@ import {
   updateProfile,
   deleteUser,
   reauthenticateWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  verifyBeforeUpdateEmail,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
 import {
   doc, setDoc, getDoc, deleteDoc, updateDoc,
@@ -77,7 +82,49 @@ export async function registerUser(name, email, password) {
     createdAt: new Date().toISOString()
   }).catch(e => console.warn('Firestore profile write:', e));
 
+  sendEmailVerification(cred.user).catch(e => console.warn('Verification email:', e));
+
   return cred.user;
+}
+
+// ── Email verification ──────────────────────────────────────
+export async function resendVerificationEmail() {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Nincs bejelentkezve.');
+  if (user.emailVerified) throw new Error('Az email cím már megerősítve.');
+  await sendEmailVerification(user);
+}
+
+// ── Password reset ──────────────────────────────────────────
+export async function resetPassword(email) {
+  await sendPasswordResetEmail(auth, email);
+}
+
+// ── Email change (sends verification to the new address) ────
+export async function changeEmail(newEmail) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Nincs bejelentkezve.');
+  await verifyBeforeUpdateEmail(user, newEmail);
+  await updateDoc(doc(db, 'users', user.uid), { email: newEmail });
+}
+
+// ── Google Sign-In ──────────────────────────────────────────
+export async function signInWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  const result = await signInWithPopup(auth, provider);
+  const user = result.user;
+
+  const ref = doc(db, 'users', user.uid);
+  const snap = await getDoc(ref).catch(() => null);
+  if (!snap || !snap.exists()) {
+    await setDoc(ref, {
+      name: user.displayName || 'Felhasználó',
+      email: user.email || '',
+      role: 'user',
+      createdAt: new Date().toISOString()
+    });
+  }
+  return user;
 }
 
 // ── Login ───────────────────────────────────────────────────

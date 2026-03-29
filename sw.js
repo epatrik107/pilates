@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pilates-v2';
+const CACHE_NAME = 'pilates-v3';
 const STATIC_ASSETS = [
   'index.html',
   'about.html',
