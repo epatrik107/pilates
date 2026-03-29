@@ -160,6 +160,19 @@ export async function createRecurringClasses(data, weeks) {
   return created;
 }
 
+// ── Pricing (stored in public settings) ─────────────────
+export async function getPricing() {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'pricing'));
+    if (snap.exists() && snap.data().items?.length) return snap.data().items;
+  } catch {}
+  return [];
+}
+
+export async function savePricing(items) {
+  await setDoc(doc(db, 'settings', 'pricing'), { items });
+}
+
 function addDays(dateStr, days) {
   const d = new Date(dateStr + 'T12:00:00');
   d.setDate(d.getDate() + days);
