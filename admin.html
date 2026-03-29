@@ -4,57 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard – Pilates Studio</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            sage: { 50:'#f4f7f0',100:'#e6edde',200:'#cddabd',300:'#a9bf93',400:'#87a46e',500:'#6b8a53',600:'#536d3f',700:'#425634',800:'#37462d',900:'#2f3b27' },
-            cream: '#faf8f4'
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
   <!-- ═══ NAVBAR ═══ -->
-  <nav id="navbar" class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <div class="flex items-center justify-between h-16">
-        <a href="index.html" class="flex items-center gap-2">
-          <svg class="w-8 h-8 text-sage-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c-4.97 0-9 2.69-9 6s4.03 6 9 6 9-2.69 9-6-4.03-6-9-6zM3 12v3c0 3.31 4.03 6 9 6s9-2.69 9-6v-3" />
-          </svg>
-          <span class="font-display text-xl font-bold text-sage-700">Pilates Studio</span>
-        </a>
-        <div id="desktop-nav" class="hidden md:flex items-center gap-1"></div>
-        <button id="menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
-          <svg class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-      <div id="mobile-menu" class="hidden md:hidden pb-4">
-        <div id="mobile-nav" class="flex flex-col gap-1"></div>
+  <nav class="navbar navbar-expand-md border-bottom sticky-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+        <svg class="text-sage" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c-4.97 0-9 2.69-9 6s4.03 6 9 6 9-2.69 9-6-4.03-6-9-6zM3 12v3c0 3.31 4.03 6 9 6s9-2.69 9-6v-3" />
+        </svg>
+        Pilates Studio
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul id="nav-links" class="navbar-nav me-auto mb-2 mb-md-0"></ul>
+        <ul id="nav-right" class="navbar-nav"></ul>
       </div>
     </div>
   </nav>
 
   <!-- ═══ MAIN CONTENT ═══ -->
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+  <main class="container py-4 py-md-5">
 
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3 mb-4">
       <div>
-        <h1 class="text-3xl font-display font-bold text-sage-800">Admin Dashboard</h1>
-        <p class="text-gray-500 mt-1">Órarendkezelés és résztvevők</p>
+        <h1 class="font-display fw-bold mb-1" style="color:var(--sage-800)">Admin Dashboard</h1>
+        <p class="text-muted small mb-0">Órarendkezelés és résztvevők</p>
       </div>
-      <button id="open-create-modal" class="btn-primary flex items-center gap-2 self-start">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <button type="button" id="open-create-modal" class="btn btn-sage d-inline-flex align-items-center gap-2 align-self-start">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
         Új óra meghirdetése
@@ -68,29 +52,29 @@
   </main>
 
   <!-- ═══ CLASS CREATE/EDIT MODAL ═══ -->
-  <div id="class-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998] hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
-      <div class="flex items-center justify-between mb-5">
-        <h2 id="modal-title" class="text-xl font-display font-semibold text-sage-800">Új óra meghirdetése</h2>
-        <button id="close-modal" class="p-2 hover:bg-gray-100 rounded-lg transition">
-          <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+  <div id="class-modal" class="modal-backdrop-custom p-3 hidden">
+    <div class="bg-white rounded-3 shadow-lg w-100 p-4" style="max-width:32rem;max-height:90vh;overflow-y:auto">
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 id="modal-title" class="h5 font-display fw-semibold mb-0" style="color:var(--sage-800)">Új óra meghirdetése</h2>
+        <button type="button" id="close-modal" class="btn btn-link text-muted p-1 border-0">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
-      <form id="class-form" class="space-y-4">
+      <form id="class-form">
         <input type="hidden" id="edit-class-id" value="" />
 
-        <div class="grid grid-cols-2 gap-4">
-          <div class="col-span-2">
+        <div class="row g-3">
+          <div class="col-12">
             <label for="class-title" class="form-label">Óra neve</label>
-            <input type="text" id="class-title" class="form-input" placeholder="pl. Mat Pilates kezdő" required />
+            <input type="text" id="class-title" class="form-control" placeholder="pl. Mat Pilates kezdő" required />
           </div>
 
-          <div>
+          <div class="col-md-6">
             <label for="class-type" class="form-label">Típus</label>
-            <select id="class-type" class="form-input" required>
+            <select id="class-type" class="form-select" required>
               <option value="mat">Mat Pilates</option>
               <option value="reformer">Reformer</option>
               <option value="tower">Tower</option>
@@ -98,52 +82,52 @@
             </select>
           </div>
 
-          <div>
+          <div class="col-md-6">
             <label for="class-location" class="form-label">Helyszín</label>
-            <input type="text" id="class-location" class="form-input" placeholder="Stúdió A" value="Stúdió" />
+            <input type="text" id="class-location" class="form-control" placeholder="Stúdió A" value="Stúdió" />
           </div>
 
-          <div>
+          <div class="col-md-6">
             <label for="class-date" class="form-label">Dátum</label>
-            <input type="date" id="class-date" class="form-input" required />
+            <input type="date" id="class-date" class="form-control" required />
           </div>
 
-          <div>
+          <div class="col-md-6">
             <label for="class-time" class="form-label">Kezdés ideje</label>
-            <input type="time" id="class-time" class="form-input" required />
+            <input type="time" id="class-time" class="form-control" required />
           </div>
 
-          <div>
+          <div class="col-md-6">
             <label for="class-duration" class="form-label">Időtartam (perc)</label>
-            <input type="number" id="class-duration" class="form-input" value="60" min="15" max="180" required />
+            <input type="number" id="class-duration" class="form-control" value="60" min="15" max="180" required />
           </div>
 
-          <div>
+          <div class="col-md-6">
             <label for="class-capacity" class="form-label">Max. létszám</label>
-            <input type="number" id="class-capacity" class="form-input" value="10" min="1" max="50" required />
+            <input type="number" id="class-capacity" class="form-control" value="10" min="1" max="50" required />
           </div>
 
-          <div class="col-span-2">
+          <div class="col-12">
             <label for="class-description" class="form-label">Leírás (opcionális)</label>
-            <textarea id="class-description" class="form-input" rows="3" placeholder="Rövid leírás az óráról..."></textarea>
+            <textarea id="class-description" class="form-control" rows="3" placeholder="Rövid leírás az óráról..."></textarea>
           </div>
         </div>
 
-        <div class="flex gap-3 justify-end pt-2">
-          <button type="button" id="cancel-modal" class="btn-secondary">Mégse</button>
-          <button type="submit" id="save-class-btn" class="btn-primary">Mentés</button>
+        <div class="d-flex gap-2 justify-content-end pt-3 mt-1">
+          <button type="button" id="cancel-modal" class="btn btn-outline-secondary">Mégse</button>
+          <button type="submit" id="save-class-btn" class="btn btn-sage">Mentés</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ═══ PARTICIPANTS MODAL ═══ -->
-  <div id="participants-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998] hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto p-6">
-      <div class="flex items-center justify-between mb-5">
-        <h2 id="participants-title" class="text-xl font-display font-semibold text-sage-800">Résztvevők</h2>
-        <button id="close-participants" class="p-2 hover:bg-gray-100 rounded-lg transition">
-          <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+  <div id="participants-modal" class="modal-backdrop-custom p-3 hidden">
+    <div class="bg-white rounded-3 shadow-lg w-100 p-4" style="max-width:28rem;max-height:80vh;overflow-y:auto">
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 id="participants-title" class="h5 font-display fw-semibold mb-0" style="color:var(--sage-800)">Résztvevők</h2>
+        <button type="button" id="close-participants" class="btn btn-link text-muted p-1 border-0">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -154,6 +138,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { initNavbar, requireAdmin, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
     import { createClass, updateClass, deleteClass, getAllClasses, getUpcomingClasses } from './js/classes.js';
@@ -264,9 +249,9 @@
         renderAdminClasses(classes);
       } catch (err) {
         classesContainer.innerHTML = `
-          <div class="text-center py-16 text-red-500">
-            <p class="font-medium">Hiba az órák betöltése során</p>
-            <p class="text-sm mt-1">${escapeHtml(err.message)}</p>
+          <div class="text-center py-5 text-danger">
+            <p class="fw-medium mb-1">Hiba az órák betöltése során</p>
+            <p class="small text-danger mb-0">${escapeHtml(err.message)}</p>
           </div>`;
       }
     }
@@ -274,12 +259,12 @@
     function renderAdminClasses(classes) {
       if (classes.length === 0) {
         classesContainer.innerHTML = `
-          <div class="empty-state">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <div class="text-center text-muted py-5 px-3">
+            <svg class="text-sage mb-3 opacity-50" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            <p class="text-gray-500 font-medium">Még nincsenek meghirdetett órák</p>
-            <p class="text-gray-400 text-sm mt-1">Kattints az „Új óra meghirdetése" gombra</p>
+            <p class="fw-medium text-secondary mb-1">Még nincsenek meghirdetett órák</p>
+            <p class="small text-muted mb-0">Kattints az „Új óra meghirdetése" gombra</p>
           </div>`;
         return;
       }
@@ -291,8 +276,8 @@
       let html = '';
 
       if (upcoming.length > 0) {
-        html += `<h2 class="text-lg font-display font-semibold text-sage-800 mb-4">Közelgő órák</h2>`;
-        html += `<div class="space-y-3 mb-10">`;
+        html += `<h2 class="h5 font-display fw-semibold mb-3" style="color:var(--sage-800)">Közelgő órák</h2>`;
+        html += `<div class="mb-4">`;
         upcoming.sort((a,b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
         upcoming.forEach(cls => { html += adminClassRow(cls); });
         html += `</div>`;
@@ -300,11 +285,11 @@
 
       if (past.length > 0) {
         html += `
-          <details class="mb-6">
-            <summary class="text-lg font-display font-semibold text-gray-400 mb-4 cursor-pointer hover:text-gray-600 transition">
+          <details class="mb-3">
+            <summary class="h5 font-display fw-semibold text-muted mb-3 user-select-none" style="cursor:pointer">
               Korábbi órák (${past.length})
             </summary>
-            <div class="space-y-3 mt-3 opacity-60">`;
+            <div class="opacity-75">`;
         past.forEach(cls => { html += adminClassRow(cls, true); });
         html += `</div></details>`;
       }
@@ -346,37 +331,39 @@
       const badgeClass = `badge-${cls.type || 'default'}`;
 
       return `
-        <div class="bg-white rounded-xl border border-gray-100 p-4 flex flex-col sm:flex-row sm:items-center gap-3 shadow-sm">
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="badge ${badgeClass}">${typeNames[cls.type] || escapeHtml(cls.type)}</span>
-              <span class="text-xs text-gray-400">${escapeHtml(cls.location || '')}</span>
+        <div class="card border shadow-sm p-3 mb-2">
+          <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2 gap-sm-3">
+            <div class="flex-grow-1 min-w-0">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge ${badgeClass}">${typeNames[cls.type] || escapeHtml(cls.type)}</span>
+                <span class="small text-muted">${escapeHtml(cls.location || '')}</span>
+              </div>
+              <h3 class="fw-semibold text-dark text-truncate h6 mb-0">${escapeHtml(cls.title)}</h3>
+              <p class="small text-muted mb-0 mt-1">
+                ${formatDate(cls.date)} &middot; ${escapeHtml(cls.startTime)} &middot; ${cls.duration} perc
+              </p>
             </div>
-            <h3 class="font-semibold text-gray-800 truncate">${escapeHtml(cls.title)}</h3>
-            <p class="text-sm text-gray-500 mt-0.5">
-              ${formatDate(cls.date)} &middot; ${escapeHtml(cls.startTime)} &middot; ${cls.duration} perc
-            </p>
-          </div>
 
-          <div class="flex items-center gap-2 text-sm">
-            <button class="participants-btn btn-secondary btn-sm flex items-center gap-1" data-id="${cls.id}">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-              </svg>
-              ${cls.currentBookings || 0}/${cls.maxCapacity}
-            </button>
-            ${!isPast ? `
-              <button class="edit-btn p-2 hover:bg-sage-50 rounded-lg transition" data-id="${cls.id}" title="Szerkesztés">
-                <svg class="w-4 h-4 text-sage-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+            <div class="d-flex align-items-center gap-2 flex-shrink-0 small">
+              <button type="button" class="participants-btn btn btn-sm btn-sage-outline d-inline-flex align-items-center gap-1" data-id="${cls.id}">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                 </svg>
+                ${cls.currentBookings || 0}/${cls.maxCapacity}
               </button>
-              <button class="delete-btn p-2 hover:bg-red-50 rounded-lg transition" data-id="${cls.id}" title="Törlés">
-                <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                </svg>
-              </button>
-            ` : ''}
+              ${!isPast ? `
+                <button type="button" class="edit-btn btn btn-sm btn-link text-sage p-1" data-id="${cls.id}" title="Szerkesztés">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                  </svg>
+                </button>
+                <button type="button" class="delete-btn btn btn-sm btn-link text-danger p-1" data-id="${cls.id}" title="Törlés">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                </button>
+              ` : ''}
+            </div>
           </div>
         </div>
       `;
@@ -386,8 +373,10 @@
     async function showParticipants(cls) {
       participantsTitle.textContent = `${cls.title} – Résztvevők`;
       participantsList.innerHTML = `
-        <div class="flex justify-center py-8">
-          <div class="w-8 h-8 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+        <div class="d-flex justify-content-center py-4">
+          <div class="spinner-border spinner-sage" role="status" style="width:2rem;height:2rem;border-width:3px">
+            <span class="visually-hidden">Betöltés...</span>
+          </div>
         </div>`;
       participantsModal.classList.remove('hidden');
 
@@ -395,28 +384,28 @@
         const bookings = await getBookingsForClass(cls.id);
         if (bookings.length === 0) {
           participantsList.innerHTML = `
-            <p class="text-center text-gray-400 py-8">Még senki sem jelentkezett erre az órára.</p>`;
+            <p class="text-center text-muted py-4 mb-0">Még senki sem jelentkezett erre az órára.</p>`;
           return;
         }
 
         participantsList.innerHTML = `
-          <div class="text-sm text-gray-500 mb-3">${bookings.length} / ${cls.maxCapacity} fő</div>
-          <ul class="space-y-2">
+          <div class="small text-muted mb-3">${bookings.length} / ${cls.maxCapacity} fő</div>
+          <ul class="list-unstyled mb-0">
             ${bookings.map((b, i) => `
-              <li class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div class="w-8 h-8 rounded-full bg-sage-200 text-sage-700 flex items-center justify-center text-sm font-bold">
+              <li class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 mb-2">
+                <div class="rounded-circle bg-sage-light text-sage flex-shrink-0 d-flex align-items-center justify-content-center fw-bold small" style="width:2rem;height:2rem">
                   ${i + 1}
                 </div>
-                <div>
-                  <p class="font-medium text-gray-800 text-sm">${escapeHtml(b.userName)}</p>
-                  <p class="text-xs text-gray-400">${escapeHtml(b.userEmail)}</p>
+                <div class="min-w-0">
+                  <p class="fw-medium text-dark small mb-0">${escapeHtml(b.userName)}</p>
+                  <p class="small text-muted mb-0">${escapeHtml(b.userEmail)}</p>
                 </div>
               </li>
             `).join('')}
           </ul>
         `;
       } catch (err) {
-        participantsList.innerHTML = `<p class="text-red-500 text-center py-8">Hiba: ${escapeHtml(err.message)}</p>`;
+        participantsList.innerHTML = `<p class="text-danger text-center py-4 mb-0">Hiba: ${escapeHtml(err.message)}</p>`;
       }
     }
   </script>

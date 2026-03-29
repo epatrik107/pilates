@@ -4,20 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Órarend – Pilates Studio</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            sage: { 50:'#f4f7f0',100:'#e6edde',200:'#cddabd',300:'#a9bf93',400:'#87a46e',500:'#6b8a53',600:'#536d3f',700:'#425634',800:'#37462d',900:'#2f3b27' },
-            cream: '#faf8f4',
-            motibro: { blue: '#3ea3dc', green: '#5cb85c', orange: '#f0ad4e' }
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
   <script src="https://apis.google.com/js/api.js" async defer></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -25,110 +12,88 @@
 <body>
 
   <!-- ═══ NAVBAR ═══ -->
-  <nav id="navbar" class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <div class="flex items-center justify-between h-16">
-        <a href="index.html" class="flex items-center gap-2">
-          <svg class="w-8 h-8 text-sage-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c-4.97 0-9 2.69-9 6s4.03 6 9 6 9-2.69 9-6-4.03-6-9-6zM3 12v3c0 3.31 4.03 6 9 6s9-2.69 9-6v-3" />
-          </svg>
-          <span class="font-display text-xl font-bold text-sage-700">Pilates Studio</span>
-        </a>
-        <div id="desktop-nav" class="hidden md:flex items-center gap-1">
-          <a href="index.html" class="nav-link">Órarend</a>
-          <a href="about.html" class="nav-link">Rólam</a>
-          <a href="login.html" class="nav-link">Bejelentkezés</a>
-          <a href="register.html" class="nav-link nav-link-primary">Regisztráció</a>
-        </div>
-        <button id="menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
-          <svg class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-      <div id="mobile-menu" class="hidden md:hidden pb-4">
-        <div id="mobile-nav" class="flex flex-col gap-1">
-          <a href="index.html" class="nav-link">Órarend</a>
-          <a href="about.html" class="nav-link">Rólam</a>
-          <a href="login.html" class="nav-link">Bejelentkezés</a>
-          <a href="register.html" class="nav-link nav-link-primary">Regisztráció</a>
-        </div>
+  <nav class="navbar navbar-expand-md border-bottom sticky-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+        <svg class="text-sage" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c-4.97 0-9 2.69-9 6s4.03 6 9 6 9-2.69 9-6-4.03-6-9-6zM3 12v3c0 3.31 4.03 6 9 6s9-2.69 9-6v-3" />
+        </svg>
+        Pilates Studio
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul id="nav-links" class="navbar-nav me-auto mb-2 mb-md-0"></ul>
+        <ul id="nav-right" class="navbar-nav"></ul>
       </div>
     </div>
   </nav>
 
   <!-- ═══ SCHEDULE ═══ -->
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-    <h1 class="text-2xl sm:text-3xl font-display font-bold text-center text-sage-800 mb-6">ÓRAREND</h1>
+  <main class="container py-4">
+    <h1 class="font-display text-center fw-bold mb-4" style="color:var(--sage-800)">ÓRAREND</h1>
 
-    <!-- ── Filters ── -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-      <div class="flex flex-col sm:flex-row gap-3 mb-3">
-        <div class="flex-1">
-          <select id="filter-instructor" class="form-input w-full">
-            <option value="all">Oktatók kiválasztása</option>
-          </select>
+    <!-- Filters -->
+    <div class="card border mb-4">
+      <div class="card-body">
+        <div class="row g-2 mb-2">
+          <div class="col-sm-6">
+            <select id="filter-instructor" class="form-select">
+              <option value="all">Oktatók kiválasztása</option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <select id="filter-type" class="form-select">
+              <option value="all">Foglalkozások kiválasztása</option>
+              <option value="mat">Mat Pilates</option>
+              <option value="reformer">Reformer Pilates</option>
+              <option value="tower">Tower Pilates</option>
+              <option value="prenatal">Kismama Pilates</option>
+            </select>
+          </div>
         </div>
-        <div class="flex-1">
-          <select id="filter-type" class="form-input w-full">
-            <option value="all">Foglalkozások kiválasztása</option>
-            <option value="mat">Mat Pilates</option>
-            <option value="reformer">Reformer Pilates</option>
-            <option value="tower">Tower Pilates</option>
-            <option value="prenatal">Kismama Pilates</option>
-          </select>
+        <div class="d-flex flex-wrap gap-3 justify-content-center small">
+          <div class="form-check"><input class="form-check-input day-filter" type="checkbox" value="1" checked id="d1"><label class="form-check-label" for="d1">Hétfő</label></div>
+          <div class="form-check"><input class="form-check-input day-filter" type="checkbox" value="2" checked id="d2"><label class="form-check-label" for="d2">Kedd</label></div>
+          <div class="form-check"><input class="form-check-input day-filter" type="checkbox" value="3" checked id="d3"><label class="form-check-label" for="d3">Szerda</label></div>
+          <div class="form-check"><input class="form-check-input day-filter" type="checkbox" value="4" checked id="d4"><label class="form-check-label" for="d4">Csütörtök</label></div>
+          <div class="form-check"><input class="form-check-input day-filter" type="checkbox" value="5" checked id="d5"><label class="form-check-label" for="d5">Péntek</label></div>
+          <div class="form-check"><input class="form-check-input day-filter" type="checkbox" value="6" checked id="d6"><label class="form-check-label" for="d6">Szombat</label></div>
+          <div class="form-check"><input class="form-check-input day-filter" type="checkbox" value="0" checked id="d0"><label class="form-check-label" for="d0">Vasárnap</label></div>
         </div>
-      </div>
-      <div class="flex flex-wrap gap-x-4 gap-y-1 justify-center text-sm">
-        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="1" checked /> Hétfő</label>
-        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="2" checked /> Kedd</label>
-        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="3" checked /> Szerda</label>
-        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="4" checked /> Csütörtök</label>
-        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="5" checked /> Péntek</label>
-        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="6" checked /> Szombat</label>
-        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="day-filter accent-sage-600" value="0" checked /> Vasárnap</label>
       </div>
     </div>
 
-    <!-- ── Table header (desktop) ── -->
-    <div class="hidden sm:grid grid-cols-[80px_1fr_1fr_1fr_140px] gap-2 px-4 py-2 text-sm font-semibold text-gray-500 border-b border-gray-200 mb-1">
-      <div></div>
-      <div>Oktató</div>
-      <div>Időpont</div>
-      <div>Foglalkozás</div>
-      <div></div>
+    <!-- Table header (desktop) -->
+    <div class="d-none d-md-flex row fw-semibold text-muted small border-bottom pb-2 mb-1 px-3">
+      <div class="col-1"></div>
+      <div class="col-2">Oktató</div>
+      <div class="col-3">Időpont</div>
+      <div class="col-4">Foglalkozás</div>
+      <div class="col-2"></div>
     </div>
 
-    <!-- ── Classes container ── -->
     <div id="classes-container"></div>
   </main>
 
-  <!-- ═══ FOOTER ═══ -->
-  <footer class="border-t border-gray-100 py-8 mt-10">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center text-sm text-gray-400">
-      &copy; 2026 Pilates Studio. Minden jog fenntartva.
-    </div>
+  <footer class="border-top py-4 mt-5">
+    <div class="container text-center text-muted small">&copy; 2026 Pilates Studio. Minden jog fenntartva.</div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { auth, onAuthStateChanged, googleCalendarConfig } from './js/firebase-config.js';
     import { getUpcomingClasses } from './js/classes.js';
     import { bookClass, getUserBookingForClass, cancelBooking, saveCalendarEventId } from './js/bookings.js';
     import { initNavbar, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
-    import {
-      generateGoogleCalendarUrl,
-      initGoogleCalendarAPI,
-      isGoogleCalendarAPIConfigured,
-      addEventToGoogleCalendar
-    } from './js/google-calendar.js';
+    import { generateGoogleCalendarUrl, initGoogleCalendarAPI, isGoogleCalendarAPIConfigured, addEventToGoogleCalendar } from './js/google-calendar.js';
 
     initNavbar();
 
     let gcalAPIEnabled = false;
     if (googleCalendarConfig.clientId && googleCalendarConfig.apiKey) {
-      initGoogleCalendarAPI(googleCalendarConfig.clientId, googleCalendarConfig.apiKey)
-        .then(ok => { gcalAPIEnabled = ok; })
-        .catch(() => {});
+      initGoogleCalendarAPI(googleCalendarConfig.clientId, googleCalendarConfig.apiKey).then(ok => { gcalAPIEnabled = ok; }).catch(() => {});
     }
 
     const container        = document.getElementById('classes-container');
@@ -136,14 +101,9 @@
     const filterInstructor = document.getElementById('filter-instructor');
     const dayCheckboxes    = document.querySelectorAll('.day-filter');
 
-    let allClasses  = [];
-    let currentUser = null;
+    let allClasses = [], currentUser = null;
 
-    onAuthStateChanged(auth, (user) => {
-      currentUser = user;
-      loadClasses();
-    });
-
+    onAuthStateChanged(auth, (user) => { currentUser = user; loadClasses(); });
     filterType.addEventListener('change', renderClasses);
     filterInstructor.addEventListener('change', renderClasses);
     dayCheckboxes.forEach(cb => cb.addEventListener('change', renderClasses));
@@ -155,220 +115,123 @@
         populateInstructorFilter();
         renderClasses();
       } catch (err) {
-        container.innerHTML = `
-          <div class="text-center py-16 text-red-500">
-            <p class="font-medium">Hiba az órák betöltése során</p>
-            <p class="text-sm mt-1">${escapeHtml(err.message)}</p>
-          </div>`;
+        container.innerHTML = `<div class="text-center py-5 text-danger"><p class="fw-medium">Hiba az órák betöltése során</p><p class="small">${escapeHtml(err.message)}</p></div>`;
       }
     }
 
     function populateInstructorFilter() {
       const instructors = [...new Set(allClasses.map(c => c.instructorName).filter(Boolean))];
       filterInstructor.innerHTML = '<option value="all">Oktatók kiválasztása</option>';
-      instructors.forEach(name => {
-        filterInstructor.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
-      });
+      instructors.forEach(n => { filterInstructor.innerHTML += `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`; });
     }
 
-    function getEndTime(startTime, duration) {
-      const [h, m] = startTime.split(':').map(Number);
-      const total = h * 60 + m + (duration || 60);
-      return `${String(Math.floor(total / 60) % 24).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`;
+    function getEndTime(s, dur) {
+      const [h, m] = s.split(':').map(Number);
+      const t = h * 60 + m + (dur || 60);
+      return `${String(Math.floor(t/60)%24).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
     }
 
-    function getDayOfWeek(dateStr) {
-      return new Date(dateStr + 'T00:00:00').getDay();
-    }
+    function getDayOfWeek(d) { return new Date(d+'T00:00:00').getDay(); }
 
-    function getTypeName(type) {
-      const names = { mat:'Mat Pilates', reformer:'Reformer Pilates', tower:'Tower Pilates', prenatal:'Kismama Pilates' };
-      return names[type] || escapeHtml(type) || 'Pilates';
+    function getTypeName(t) {
+      return {mat:'Mat Pilates',reformer:'Reformer Pilates',tower:'Tower Pilates',prenatal:'Kismama Pilates'}[t] || escapeHtml(t) || 'Pilates';
     }
 
     async function renderClasses() {
-      const typeVal       = filterType.value;
-      const instructorVal = filterInstructor.value;
-      const activeDays    = new Set([...dayCheckboxes].filter(cb => cb.checked).map(cb => Number(cb.value)));
+      const typeVal = filterType.value;
+      const instrVal = filterInstructor.value;
+      const activeDays = new Set([...dayCheckboxes].filter(cb => cb.checked).map(cb => Number(cb.value)));
 
       let filtered = allClasses.filter(c => {
         if (typeVal !== 'all' && c.type !== typeVal) return false;
-        if (instructorVal !== 'all' && c.instructorName !== instructorVal) return false;
+        if (instrVal !== 'all' && c.instructorName !== instrVal) return false;
         if (!activeDays.has(getDayOfWeek(c.date))) return false;
         return true;
       });
 
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="text-center py-16">
-            <p class="text-gray-400 font-medium">Nincs megjeleníthető óra</p>
-            <p class="text-gray-300 text-sm mt-1">Próbáld módosítani a szűrőket</p>
-          </div>`;
+      if (!filtered.length) {
+        container.innerHTML = '<div class="text-center py-5 text-muted">Nincs megjeleníthető óra. Próbáld módosítani a szűrőket.</div>';
         return;
       }
 
       const grouped = {};
-      filtered.forEach(c => {
-        if (!grouped[c.date]) grouped[c.date] = [];
-        grouped[c.date].push(c);
-      });
+      filtered.forEach(c => { (grouped[c.date] ??= []).push(c); });
 
       let html = '';
-
       for (const [date, classes] of Object.entries(grouped)) {
-        html += `
-          <div class="bg-motibro-blue text-white font-semibold text-sm sm:text-base px-4 py-2 rounded-t-lg mt-4">
-            ${formatDate(date)}
-          </div>
-          <div class="bg-white border border-t-0 border-gray-200 rounded-b-lg overflow-hidden divide-y divide-gray-100">`;
-
+        html += `<div class="schedule-date-header mt-3">${formatDate(date)}</div><div class="bg-white border border-top-0 rounded-bottom mb-2">`;
         for (const cls of classes) {
-          const isFull    = cls.currentBookings >= cls.maxCapacity;
-          const freeSpots = cls.maxCapacity - cls.currentBookings;
-          const endTime   = getEndTime(cls.startTime, cls.duration);
-
+          const isFull = cls.currentBookings >= cls.maxCapacity;
+          const free = cls.maxCapacity - cls.currentBookings;
+          const end = getEndTime(cls.startTime, cls.duration);
           let userBooking = null;
-          if (currentUser) {
-            userBooking = await getUserBookingForClass(currentUser.uid, cls.id);
-          }
+          if (currentUser) userBooking = await getUserBookingForClass(currentUser.uid, cls.id);
 
-          let statusText, statusColor;
-          if (isFull) {
-            statusText  = 'Minden hely betelt!';
-            statusColor = 'text-red-500';
-          } else if (freeSpots <= 2) {
-            statusText  = `${freeSpots} szabad hely!`;
-            statusColor = 'text-red-500';
-          } else {
-            statusText  = `${freeSpots} szabad hely`;
-            statusColor = 'text-green-600';
-          }
+          let statusHtml, statusClass;
+          if (isFull) { statusHtml = 'Minden hely betelt!'; statusClass = 'text-danger'; }
+          else if (free <= 2) { statusHtml = `${free} szabad hely!`; statusClass = 'text-danger'; }
+          else { statusHtml = `${free} szabad hely`; statusClass = 'text-success'; }
 
           let actionBtn;
           if (currentUser) {
-            if (userBooking) {
-              actionBtn = `
-                <button class="cancel-btn px-4 py-2 text-sm font-semibold rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition whitespace-nowrap"
-                        data-booking-id="${userBooking.id}" data-class-id="${cls.id}">
-                  Lemondás
-                </button>`;
-            } else if (isFull) {
-              actionBtn = `
-                <button class="px-4 py-2 text-sm font-semibold rounded-lg bg-motibro-orange text-white hover:opacity-90 transition whitespace-nowrap" disabled>
-                  Várólistára
-                </button>`;
-            } else {
-              actionBtn = `
-                <button class="book-btn px-4 py-2 text-sm font-semibold rounded-lg bg-motibro-green text-white hover:opacity-90 transition whitespace-nowrap"
-                        data-class-id="${cls.id}">
-                  Bejelentkezés
-                </button>`;
-            }
+            if (userBooking) actionBtn = `<button class="btn btn-sm btn-outline-secondary cancel-btn" data-booking-id="${userBooking.id}" data-class-id="${cls.id}">Lemondás</button>`;
+            else if (isFull) actionBtn = `<button class="btn btn-sm btn-motibro-orange" disabled>Várólistára</button>`;
+            else actionBtn = `<button class="btn btn-sm btn-motibro-green book-btn" data-class-id="${cls.id}">Bejelentkezés</button>`;
           } else {
-            actionBtn = `
-              <a href="login.html" class="px-4 py-2 text-sm font-semibold rounded-lg bg-motibro-green text-white hover:opacity-90 transition whitespace-nowrap inline-block text-center">
-                Bejelentkezés
-              </a>`;
+            actionBtn = `<a href="login.html" class="btn btn-sm btn-motibro-green">Bejelentkezés</a>`;
           }
 
-          // Desktop row
-          html += `
-            <div class="hidden sm:grid grid-cols-[80px_1fr_1fr_1fr_140px] gap-2 items-center px-4 py-3 hover:bg-gray-50 transition">
-              <div class="flex justify-center">
-                <div class="w-12 h-12 rounded-full bg-sage-100 flex items-center justify-center overflow-hidden">
-                  <svg class="w-7 h-7 text-sage-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
-                  </svg>
-                </div>
-              </div>
-              <div>
-                <div class="font-medium text-gray-800">${escapeHtml(cls.instructorName)}</div>
-              </div>
-              <div>
-                <div class="font-semibold text-gray-800">${escapeHtml(cls.startTime)} - ${endTime}</div>
-                <div class="text-xs font-semibold ${statusColor}">${statusText}</div>
-              </div>
-              <div>
-                <div class="text-gray-700">${getTypeName(cls.type)}</div>
-                ${cls.title ? `<div class="text-xs text-gray-400">${escapeHtml(cls.title)}</div>` : ''}
-              </div>
-              <div class="flex justify-end">${actionBtn}</div>
-            </div>`;
+          // Desktop
+          html += `<div class="schedule-row d-none d-md-flex align-items-center row px-3">
+            <div class="col-1 d-flex justify-content-center"><div class="avatar-sm"><svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg></div></div>
+            <div class="col-2 fw-medium">${escapeHtml(cls.instructorName)}</div>
+            <div class="col-3"><div class="fw-semibold">${escapeHtml(cls.startTime)} - ${end}</div><div class="small fw-semibold ${statusClass}">${statusHtml}</div></div>
+            <div class="col-4"><div>${getTypeName(cls.type)}</div>${cls.title?`<div class="text-muted small">${escapeHtml(cls.title)}</div>`:''}</div>
+            <div class="col-2 text-end">${actionBtn}</div>
+          </div>`;
 
-          // Mobile row
-          html += `
-            <div class="sm:hidden px-4 py-3 space-y-2">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-6 h-6 text-sage-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
-                  </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="font-medium text-gray-800">${escapeHtml(cls.instructorName)}</div>
-                  <div class="text-sm text-gray-600">${escapeHtml(cls.startTime)} - ${endTime} · ${getTypeName(cls.type)}</div>
-                  <div class="text-xs font-semibold ${statusColor}">${statusText}</div>
-                </div>
-                <div class="flex-shrink-0">${actionBtn}</div>
+          // Mobile
+          html += `<div class="schedule-row d-md-none px-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="avatar-sm flex-shrink-0"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg></div>
+              <div class="flex-grow-1">
+                <div class="fw-medium">${escapeHtml(cls.instructorName)}</div>
+                <div class="small text-muted">${escapeHtml(cls.startTime)} - ${end} · ${getTypeName(cls.type)}</div>
+                <div class="small fw-semibold ${statusClass}">${statusHtml}</div>
               </div>
-            </div>`;
+              <div class="flex-shrink-0">${actionBtn}</div>
+            </div>
+          </div>`;
         }
-
-        html += `</div>`;
+        html += '</div>';
       }
-
       container.innerHTML = html;
 
-      // Book buttons
       container.querySelectorAll('.book-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
-          const classId   = btn.dataset.classId;
-          const classData = allClasses.find(c => c.id === classId);
-          if (!classData) return;
-
-          btn.disabled = true;
-          btn.textContent = 'Foglalás...';
-
+          const cls = allClasses.find(c => c.id === btn.dataset.classId);
+          if (!cls) return;
+          btn.disabled = true; btn.textContent = 'Foglalás...';
           try {
-            const bookingRef = await bookClass(currentUser, classData);
+            const ref = await bookClass(currentUser, cls);
             if (isGoogleCalendarAPIConfigured()) {
-              try {
-                const eventId = await addEventToGoogleCalendar(classData);
-                await saveCalendarEventId(bookingRef.id, eventId);
-                showToast('Sikeresen foglaltál! Naptáreseményt is hozzáadtuk.', 'success');
-              } catch (calErr) {
-                showToast('Foglalás sikeres!', 'success');
-              }
-            } else {
-              showToast('Sikeresen foglaltál!', 'success');
+              try { const eid = await addEventToGoogleCalendar(cls); await saveCalendarEventId(ref.id, eid); } catch(e) {}
             }
-            allClasses = await getUpcomingClasses();
-            renderClasses();
-          } catch (err) {
-            showToast(err.message, 'error');
-            btn.disabled = false;
-            btn.textContent = 'Bejelentkezés';
-          }
+            showToast('Sikeresen foglaltál!', 'success');
+            allClasses = await getUpcomingClasses(); renderClasses();
+          } catch (err) { showToast(err.message, 'error'); btn.disabled = false; btn.textContent = 'Bejelentkezés'; }
         });
       });
 
-      // Cancel buttons
       container.querySelectorAll('.cancel-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
-          const ok = await showConfirm('Biztosan le szeretnéd mondani a foglalásod?');
-          if (!ok) return;
-          btn.disabled = true;
-          btn.textContent = 'Lemondás...';
+          if (!await showConfirm('Biztosan le szeretnéd mondani a foglalásod?')) return;
+          btn.disabled = true; btn.textContent = 'Lemondás...';
           try {
             await cancelBooking(btn.dataset.bookingId, btn.dataset.classId);
-            showToast('Foglalás sikeresen lemondva.', 'info');
-            allClasses = await getUpcomingClasses();
-            renderClasses();
-          } catch (err) {
-            showToast('Hiba a lemondás során.', 'error');
-            btn.disabled = false;
-            btn.textContent = 'Lemondás';
-          }
+            showToast('Foglalás lemondva.', 'info');
+            allClasses = await getUpcomingClasses(); renderClasses();
+          } catch (err) { showToast('Hiba a lemondás során.', 'error'); btn.disabled = false; btn.textContent = 'Lemondás'; }
         });
       });
     }

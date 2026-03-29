@@ -4,70 +4,49 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Profilom – Pilates Studio</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            sage: { 50:'#f4f7f0',100:'#e6edde',200:'#cddabd',300:'#a9bf93',400:'#87a46e',500:'#6b8a53',600:'#536d3f',700:'#425634',800:'#37462d',900:'#2f3b27' },
-            cream: '#faf8f4'
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
-  <!-- Google Calendar API (optional – if configured) -->
   <script src="https://apis.google.com/js/api.js" async defer></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
-  <!-- ═══ NAVBAR ═══ -->
-  <nav id="navbar" class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <div class="flex items-center justify-between h-16">
-        <a href="index.html" class="flex items-center gap-2">
-          <svg class="w-8 h-8 text-sage-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c-4.97 0-9 2.69-9 6s4.03 6 9 6 9-2.69 9-6-4.03-6-9-6zM3 12v3c0 3.31 4.03 6 9 6s9-2.69 9-6v-3" />
-          </svg>
-          <span class="font-display text-xl font-bold text-sage-700">Pilates Studio</span>
-        </a>
-        <div id="desktop-nav" class="hidden md:flex items-center gap-1"></div>
-        <button id="menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
-          <svg class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-      <div id="mobile-menu" class="hidden md:hidden pb-4">
-        <div id="mobile-nav" class="flex flex-col gap-1"></div>
+  <nav class="navbar navbar-expand-md border-bottom sticky-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+        <svg class="text-sage" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c-4.97 0-9 2.69-9 6s4.03 6 9 6 9-2.69 9-6-4.03-6-9-6zM3 12v3c0 3.31 4.03 6 9 6s9-2.69 9-6v-3" />
+        </svg>
+        Pilates Studio
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul id="nav-links" class="navbar-nav me-auto mb-2 mb-md-0"></ul>
+        <ul id="nav-right" class="navbar-nav"></ul>
       </div>
     </div>
   </nav>
 
-  <!-- ═══ MAIN CONTENT ═══ -->
-  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+  <main class="container py-4" style="max-width: 800px;">
 
-    <!-- Profile header -->
-    <div id="profile-header" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
-      <div class="flex items-center gap-4">
-        <div id="avatar" class="w-16 h-16 rounded-full bg-sage-200 text-sage-700 flex items-center justify-center text-2xl font-display font-bold">
+    <div id="profile-header" class="card border shadow-sm p-4 mb-4">
+      <div class="d-flex align-items-center gap-3">
+        <div id="avatar" class="avatar-circle">
           ?
         </div>
         <div>
-          <h1 id="user-name" class="text-2xl font-display font-bold text-sage-800">Betöltés...</h1>
-          <p id="user-email" class="text-gray-500 text-sm"></p>
-          <span id="user-role" class="badge badge-default mt-1"></span>
+          <h1 id="user-name" class="h3 font-display fw-bold mb-1" style="color: var(--sage-800);">Betöltés...</h1>
+          <p id="user-email" class="small text-muted mb-1"></p>
+          <span id="user-role" class="mt-1"></span>
         </div>
       </div>
     </div>
 
-    <!-- Bookings -->
-    <div class="mb-6">
-      <h2 class="text-xl font-display font-semibold text-sage-800 mb-4 flex items-center gap-2">
-        <svg class="w-5 h-5 text-sage-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <div class="mb-3">
+      <h2 class="h5 font-display fw-semibold d-flex align-items-center gap-2 mb-0" style="color: var(--sage-800);">
+        <svg class="text-sage flex-shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
         </svg>
         Közelgő foglalásaim
@@ -75,17 +54,16 @@
     </div>
 
     <div id="bookings-container">
-      <!-- Loading... -->
     </div>
   </main>
 
-  <!-- ═══ FOOTER ═══ -->
-  <footer class="border-t border-gray-100 py-8 mt-10">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center text-sm text-gray-400">
+  <footer class="border-top py-4 mt-5">
+    <div class="container text-center small text-muted">
       &copy; 2026 Pilates Studio. Minden jog fenntartva.
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { initNavbar, requireAuth, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
     import { getUserProfile } from './js/auth.js';
@@ -119,10 +97,10 @@
       const roleEl = document.getElementById('user-role');
       if (role === 'admin') {
         roleEl.textContent = 'Edző / Admin';
-        roleEl.className   = 'badge bg-sage-100 text-sage-700';
+        roleEl.className   = 'badge badge-sage mt-1';
       } else {
         roleEl.textContent = 'Tag';
-        roleEl.className   = 'badge bg-blue-100 text-blue-700';
+        roleEl.className   = 'badge bg-primary-subtle text-primary mt-1';
       }
 
       loadBookings(user.uid);
@@ -137,9 +115,9 @@
         renderBookings(bookings, container);
       } catch (err) {
         container.innerHTML = `
-          <div class="text-center py-16 text-red-500">
-            <p class="font-medium">Hiba a foglalások betöltése során</p>
-            <p class="text-sm mt-1">${escapeHtml(err.message)}</p>
+          <div class="text-center py-5 text-danger">
+            <p class="fw-medium mb-1">Hiba a foglalások betöltése során</p>
+            <p class="small mb-0">${escapeHtml(err.message)}</p>
           </div>`;
       }
     }
@@ -147,25 +125,25 @@
     function renderBookings(bookings, container) {
       if (bookings.length === 0) {
         container.innerHTML = `
-          <div class="empty-state">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <div class="text-center py-5 px-3">
+            <svg class="text-muted mb-3 opacity-50" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
             </svg>
-            <p class="text-gray-500 font-medium">Nincs közelgő foglalásod</p>
-            <p class="text-gray-400 text-sm mt-1">
-              Nézd meg az <a href="index.html" class="text-sage-600 underline">órarendet</a> és foglalj helyet!
+            <p class="text-muted fw-medium mb-1">Nincs közelgő foglalásod</p>
+            <p class="small text-muted mb-0">
+              Nézd meg az <a href="index.html" class="text-sage">órarendet</a> és foglalj helyet!
             </p>
           </div>`;
         return;
       }
 
-      const calIcon = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      const calIcon = `<svg class="flex-shrink-0" style="width:1rem;height:1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
       </svg>`;
 
       container.innerHTML = `
-        <div class="space-y-3">
-          ${bookings.map((b, i) => {
+        <div>
+          ${bookings.map((b) => {
             const gcalUrl = generateGoogleCalendarUrl({
               title: b.classTitle,
               date: b.classDate,
@@ -178,20 +156,20 @@
             const hasCalEvent = !!b.calendarEventId;
 
             return `
-            <div class="class-card animate-fade-in-up stagger-${(i % 4) + 1} opacity-0">
-              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div class="flex-1">
-                <h3 class="font-semibold text-gray-800">${escapeHtml(b.classTitle)}</h3>
-                <p class="text-sm text-gray-500 mt-1">
+            <div class="card border p-3 mb-2 animate-fade-in-up">
+              <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+                <div class="flex-grow-1">
+                <h3 class="fw-semibold mb-1 mb-sm-0">${escapeHtml(b.classTitle)}</h3>
+                <p class="small text-muted mb-0">
                   ${formatDate(b.classDate)} &middot; ${escapeHtml(b.classStartTime)}
                     ${b.classLocation ? ` &middot; ${escapeHtml(b.classLocation)}` : ''}
                   </p>
-                  ${hasCalEvent ? '<p class="text-xs text-green-600 mt-1 flex items-center gap-1">' + calIcon + ' Szinkronizálva a Google Naptárral</p>' : ''}
+                  ${hasCalEvent ? '<p class="small text-success mt-1 mb-0 d-flex align-items-center gap-1">' + calIcon + ' Szinkronizálva a Google Naptárral</p>' : ''}
                 </div>
-                <div class="flex items-center gap-2 self-start">
+                <div class="d-flex align-items-center gap-2 flex-shrink-0 align-self-start">
                   ${!hasCalEvent
                     ? isGoogleCalendarAPIConfigured()
-                      ? `<button class="gcal-sync-btn inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition"
+                      ? `<button type="button" class="gcal-sync-btn btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
                                  data-booking-id="${b.id}"
                                  data-class-title="${b.classTitle}"
                                  data-class-date="${b.classDate}"
@@ -204,15 +182,15 @@
                           ${calIcon} Naptár
                         </button>`
                       : `<a href="${gcalUrl}" target="_blank" rel="noopener"
-                            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition"
+                            class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
                             title="Hozzáadás a Google Naptárhoz">
                           ${calIcon} Naptár
                         </a>`
                     : ''
                   }
-                  <button class="cancel-booking-btn btn-secondary btn-sm flex items-center gap-1"
+                  <button type="button" class="cancel-booking-btn btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
                           data-booking-id="${b.id}" data-class-id="${b.classId}">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg class="flex-shrink-0" style="width:1rem;height:1rem" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                     Lemondás
