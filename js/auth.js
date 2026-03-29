@@ -34,15 +34,18 @@ export async function registerUser(name, email, password) {
   }
 
   try {
-    await setDoc(doc(db, 'users', cred.user.uid), {
+    const writePromise = setDoc(doc(db, 'users', cred.user.uid), {
       name: cleanName,
       email,
       role: 'user',
       createdAt: serverTimestamp()
     });
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Firestore write timed out')), 8000)
+    );
+    await Promise.race([writePromise, timeoutPromise]);
   } catch (firestoreErr) {
     console.error('Firestore user profile write failed:', firestoreErr);
-    throw firestoreErr;
   }
 
   return cred.user;
