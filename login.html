@@ -58,15 +58,12 @@
   </div>
 
   <script type="module">
-    import { loginUser, getUserProfile } from './js/auth.js';
+    import { loginUser } from './js/auth.js';
     import { auth, onAuthStateChanged } from './js/firebase-config.js';
     import { checkRateLimit } from './js/ui.js';
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const profile = await getUserProfile(user.uid);
-        window.location.href = profile?.role === 'admin' ? 'admin.html' : 'index.html';
-      }
+    onAuthStateChanged(auth, (user) => {
+      if (user) window.location.href = 'index.html';
     });
 
     const form     = document.getElementById('login-form');
@@ -91,10 +88,8 @@
       try {
         const email    = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const user     = await loginUser(email, password);
-
-        const profile = await getUserProfile(user.uid);
-        window.location.href = profile?.role === 'admin' ? 'admin.html' : 'index.html';
+        await loginUser(email, password);
+        window.location.href = 'index.html';
       } catch (err) {
         const messages = {
           'auth/user-not-found':    'Ez az e-mail cím nincs regisztrálva.',

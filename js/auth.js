@@ -5,9 +5,17 @@ import {
   updateProfile
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
 import {
-  doc, setDoc, getDoc, serverTimestamp
+  doc, setDoc, getDoc
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
+
+// Wraps any promise with a timeout to prevent Firestore hangs
+function withTimeout(promise, ms = 6000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+  ]);
+}
 
 // ── Input sanitization ──────────────────────────────────────
 function sanitizeName(name) {
@@ -16,6 +24,30 @@ function sanitizeName(name) {
     .replace(/&/g, '&amp;')
     .trim()
     .slice(0, 100);
+}
+
+// ── Ensure user profile exists in Firestore ─────────────────
+// Called on every page load via initNavbar; creates the profile
+// document if it doesn't exist yet (fallback for failed writes).
+export async function ensureUserProfile(user) {
+  if (!user) return null;
+  try {
+    const ref = doc(db, 'users', user.uid);
+    const snap = await withTimeout(getDoc(ref));
+    if (snap.exists()) return snap.data();
+
+    const profile = {
+      name: user.displayName || 'Felhasználó',
+      email: user.email || '',
+      role: 'user',
+      createdAt: new Date().toISOString()
+    };
+    withTimeout(setDoc(ref, profile)).catch(e => console.warn('ensureUserProfile setDoc:', e));
+    return profile;
+  } catch (err) {
+    console.warn('ensureUserProfile timeout/error:', err.message);
+    return { name: user.displayName || 'Felhasználó', email: user.email || '', role: 'user' };
+  }
 }
 
 // ── Registration ────────────────────────────────────────────
@@ -29,24 +61,17 @@ export async function registerUser(name, email, password) {
 
   try {
     await updateProfile(cred.user, { displayName: cleanName });
-  } catch (profileErr) {
-    console.warn('Profile update failed (non-critical):', profileErr);
+  } catch (e) {
+    console.warn('Profile update failed:', e);
   }
 
-  try {
-    const writePromise = setDoc(doc(db, 'users', cred.user.uid), {
-      name: cleanName,
-      email,
-      role: 'user',
-      createdAt: serverTimestamp()
-    });
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Firestore write timed out')), 8000)
-    );
-    await Promise.race([writePromise, timeoutPromise]);
-  } catch (firestoreErr) {
-    console.error('Firestore user profile write failed:', firestoreErr);
-  }
+  // Fire and forget — ensureUserProfile will retry on next page load
+  setDoc(doc(db, 'users', cred.user.uid), {
+    name: cleanName,
+    email,
+    role: 'user',
+    createdAt: new Date().toISOString()
+  }).catch(e => console.warn('Firestore profile write:', e));
 
   return cred.user;
 }
@@ -64,8 +89,13 @@ export async function logoutUser() {
 
 // ── Get user profile from Firestore ─────────────────────────
 export async function getUserProfile(uid) {
-  const snap = await getDoc(doc(db, 'users', uid));
-  return snap.exists() ? snap.data() : null;
+  try {
+    const snap = await withTimeout(getDoc(doc(db, 'users', uid)));
+    return snap.exists() ? snap.data() : null;
+  } catch (err) {
+    console.warn('getUserProfile timeout/error:', err.message);
+    return null;
+  }
 }
 
 // ── Role check ──────────────────────────────────────────────

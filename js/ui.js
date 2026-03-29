@@ -1,5 +1,5 @@
 import { auth, onAuthStateChanged } from './firebase-config.js';
-import { logoutUser, getUserProfile } from './auth.js';
+import { logoutUser, getUserProfile, ensureUserProfile } from './auth.js';
 
 // ── XSS protection: HTML escape ─────────────────────────────
 // All user input MUST be passed through this function before
@@ -150,7 +150,7 @@ export function initNavbar() {
       return;
     }
 
-    const profile = await getUserProfile(user.uid);
+    const profile = await ensureUserProfile(user);
     const role    = profile?.role || 'user';
     const name    = profile?.name || user.displayName || 'Felhasználó';
 
