@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard – Pilates Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sage: { 50:'#f4f7f0',100:'#e6edde',200:'#cddabd',300:'#a9bf93',400:'#87a46e',500:'#6b8a53',600:'#536d3f',700:'#425634',800:'#37462d',900:'#2f3b27' },
+            cream: '#faf8f4'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav id="navbar" class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between h-16">
+        <a href="index.html" class="flex items-center gap-2">
+          <svg class="w-8 h-8 text-sage-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c-4.97 0-9 2.69-9 6s4.03 6 9 6 9-2.69 9-6-4.03-6-9-6zM3 12v3c0 3.31 4.03 6 9 6s9-2.69 9-6v-3" />
+          </svg>
+          <span class="font-display text-xl font-bold text-sage-700">Pilates Studio</span>
+        </a>
+        <div id="desktop-nav" class="hidden md:flex items-center gap-1"></div>
+        <button id="menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+          <svg class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="hidden md:hidden pb-4">
+        <div id="mobile-nav" class="flex flex-col gap-1"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-display font-bold text-sage-800">Admin Dashboard</h1>
+        <p class="text-gray-500 mt-1">Órarendkezelés és résztvevők</p>
+      </div>
+      <button id="open-create-modal" class="btn-primary flex items-center gap-2 self-start">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        Új óra meghirdetése
+      </button>
+    </div>
+
+    <!-- Classes list -->
+    <div id="admin-classes">
+      <!-- Loading... -->
+    </div>
+  </main>
+
+  <!-- ═══ CLASS CREATE/EDIT MODAL ═══ -->
+  <div id="class-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 id="modal-title" class="text-xl font-display font-semibold text-sage-800">Új óra meghirdetése</h2>
+        <button id="close-modal" class="p-2 hover:bg-gray-100 rounded-lg transition">
+          <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="class-form" class="space-y-4">
+        <input type="hidden" id="edit-class-id" value="" />
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="col-span-2">
+            <label for="class-title" class="form-label">Óra neve</label>
+            <input type="text" id="class-title" class="form-input" placeholder="pl. Mat Pilates kezdő" required />
+          </div>
+
+          <div>
+            <label for="class-type" class="form-label">Típus</label>
+            <select id="class-type" class="form-input" required>
+              <option value="mat">Mat Pilates</option>
+              <option value="reformer">Reformer</option>
+              <option value="tower">Tower</option>
+              <option value="prenatal">Kismama</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="class-location" class="form-label">Helyszín</label>
+            <input type="text" id="class-location" class="form-input" placeholder="Stúdió A" value="Stúdió" />
+          </div>
+
+          <div>
+            <label for="class-date" class="form-label">Dátum</label>
+            <input type="date" id="class-date" class="form-input" required />
+          </div>
+
+          <div>
+            <label for="class-time" class="form-label">Kezdés ideje</label>
+            <input type="time" id="class-time" class="form-input" required />
+          </div>
+
+          <div>
+            <label for="class-duration" class="form-label">Időtartam (perc)</label>
+            <input type="number" id="class-duration" class="form-input" value="60" min="15" max="180" required />
+          </div>
+
+          <div>
+            <label for="class-capacity" class="form-label">Max. létszám</label>
+            <input type="number" id="class-capacity" class="form-input" value="10" min="1" max="50" required />
+          </div>
+
+          <div class="col-span-2">
+            <label for="class-description" class="form-label">Leírás (opcionális)</label>
+            <textarea id="class-description" class="form-input" rows="3" placeholder="Rövid leírás az óráról..."></textarea>
+          </div>
+        </div>
+
+        <div class="flex gap-3 justify-end pt-2">
+          <button type="button" id="cancel-modal" class="btn-secondary">Mégse</button>
+          <button type="submit" id="save-class-btn" class="btn-primary">Mentés</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══ PARTICIPANTS MODAL ═══ -->
+  <div id="participants-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 id="participants-title" class="text-xl font-display font-semibold text-sage-800">Résztvevők</h2>
+        <button id="close-participants" class="p-2 hover:bg-gray-100 rounded-lg transition">
+          <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div id="participants-list">
+        <!-- Participants list -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initNavbar, requireAdmin, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
+    import { createClass, updateClass, deleteClass, getAllClasses, getUpcomingClasses } from './js/classes.js';
+    import { getBookingsForClass } from './js/bookings.js';
+
+    initNavbar();
+
+    let adminUser    = null;
+    let adminProfile = null;
+
+    requireAdmin((user, profile) => {
+      adminUser    = user;
+      adminProfile = profile;
+      loadAdminClasses();
+    });
+
+    // ── DOM elements ─────────────────────────────────────────
+    const classesContainer  = document.getElementById('admin-classes');
+    const modal             = document.getElementById('class-modal');
+    const modalTitle        = document.getElementById('modal-title');
+    const classForm         = document.getElementById('class-form');
+    const editClassId       = document.getElementById('edit-class-id');
+    const participantsModal = document.getElementById('participants-modal');
+    const participantsTitle = document.getElementById('participants-title');
+    const participantsList  = document.getElementById('participants-list');
+
+    // ── Modal handling ──────────────────────────────────────
+    document.getElementById('open-create-modal').addEventListener('click', () => openModal());
+    document.getElementById('close-modal').addEventListener('click', () => closeModal());
+    document.getElementById('cancel-modal').addEventListener('click', () => closeModal());
+    document.getElementById('close-participants').addEventListener('click', () => {
+      participantsModal.classList.add('hidden');
+    });
+
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    participantsModal.addEventListener('click', (e) => { if (e.target === participantsModal) participantsModal.classList.add('hidden'); });
+
+    function openModal(classData = null) {
+      editClassId.value = '';
+      classForm.reset();
+
+      if (classData) {
+        modalTitle.textContent = 'Óra szerkesztése';
+        editClassId.value = classData.id;
+        document.getElementById('class-title').value       = classData.title;
+        document.getElementById('class-type').value        = classData.type;
+        document.getElementById('class-location').value    = classData.location || '';
+        document.getElementById('class-date').value        = classData.date;
+        document.getElementById('class-time').value        = classData.startTime;
+        document.getElementById('class-duration').value    = classData.duration;
+        document.getElementById('class-capacity').value    = classData.maxCapacity;
+        document.getElementById('class-description').value = classData.description || '';
+      } else {
+        modalTitle.textContent = 'Új óra meghirdetése';
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
+
+    // ── Save class (create / update) ───────────────
+    classForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('save-class-btn');
+      btn.disabled = true;
+      btn.textContent = 'Mentés...';
+
+      const data = {
+        title:          document.getElementById('class-title').value.trim(),
+        type:           document.getElementById('class-type').value,
+        location:       document.getElementById('class-location').value.trim(),
+        date:           document.getElementById('class-date').value,
+        startTime:      document.getElementById('class-time').value,
+        duration:       document.getElementById('class-duration').value,
+        maxCapacity:    document.getElementById('class-capacity').value,
+        description:    document.getElementById('class-description').value.trim(),
+        instructorId:   adminUser.uid,
+        instructorName: adminProfile.name || adminUser.displayName || 'Edző',
+      };
+
+      try {
+        const id = editClassId.value;
+        if (id) {
+          await updateClass(id, data);
+          showToast('Óra sikeresen módosítva!', 'success');
+        } else {
+          await createClass(data);
+          showToast('Új óra sikeresen létrehozva!', 'success');
+        }
+        closeModal();
+        loadAdminClasses();
+      } catch (err) {
+        showToast('Hiba: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Mentés';
+      }
+    });
+
+    // ── Load classes ─────────────────────────────────────
+    async function loadAdminClasses() {
+      showLoading(classesContainer);
+      try {
+        const classes = await getAllClasses();
+        renderAdminClasses(classes);
+      } catch (err) {
+        classesContainer.innerHTML = `
+          <div class="text-center py-16 text-red-500">
+            <p class="font-medium">Hiba az órák betöltése során</p>
+            <p class="text-sm mt-1">${escapeHtml(err.message)}</p>
+          </div>`;
+      }
+    }
+
+    function renderAdminClasses(classes) {
+      if (classes.length === 0) {
+        classesContainer.innerHTML = `
+          <div class="empty-state">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <p class="text-gray-500 font-medium">Még nincsenek meghirdetett órák</p>
+            <p class="text-gray-400 text-sm mt-1">Kattints az „Új óra meghirdetése" gombra</p>
+          </div>`;
+        return;
+      }
+
+      const today    = new Date().toISOString().split('T')[0];
+      const upcoming = classes.filter(c => c.date >= today);
+      const past     = classes.filter(c => c.date <  today);
+
+      let html = '';
+
+      if (upcoming.length > 0) {
+        html += `<h2 class="text-lg font-display font-semibold text-sage-800 mb-4">Közelgő órák</h2>`;
+        html += `<div class="space-y-3 mb-10">`;
+        upcoming.sort((a,b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
+        upcoming.forEach(cls => { html += adminClassRow(cls); });
+        html += `</div>`;
+      }
+
+      if (past.length > 0) {
+        html += `
+          <details class="mb-6">
+            <summary class="text-lg font-display font-semibold text-gray-400 mb-4 cursor-pointer hover:text-gray-600 transition">
+              Korábbi órák (${past.length})
+            </summary>
+            <div class="space-y-3 mt-3 opacity-60">`;
+        past.forEach(cls => { html += adminClassRow(cls, true); });
+        html += `</div></details>`;
+      }
+
+      classesContainer.innerHTML = html;
+
+      // Bind events
+      classesContainer.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cls = classes.find(c => c.id === btn.dataset.id);
+          if (cls) openModal(cls);
+        });
+      });
+
+      classesContainer.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const ok = await showConfirm('Biztosan törölni szeretnéd ezt az órát? A kapcsolódó foglalások is törlődnek.');
+          if (!ok) return;
+          try {
+            await deleteClass(btn.dataset.id);
+            showToast('Óra sikeresen törölve.', 'info');
+            loadAdminClasses();
+          } catch (err) {
+            showToast('Hiba a törlés során.', 'error');
+          }
+        });
+      });
+
+      classesContainer.querySelectorAll('.participants-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const cls = classes.find(c => c.id === btn.dataset.id);
+          await showParticipants(cls);
+        });
+      });
+    }
+
+    function adminClassRow(cls, isPast = false) {
+      const typeNames = { mat: 'Mat', reformer: 'Reformer', tower: 'Tower', prenatal: 'Kismama' };
+      const badgeClass = `badge-${cls.type || 'default'}`;
+
+      return `
+        <div class="bg-white rounded-xl border border-gray-100 p-4 flex flex-col sm:flex-row sm:items-center gap-3 shadow-sm">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="badge ${badgeClass}">${typeNames[cls.type] || escapeHtml(cls.type)}</span>
+              <span class="text-xs text-gray-400">${escapeHtml(cls.location || '')}</span>
+            </div>
+            <h3 class="font-semibold text-gray-800 truncate">${escapeHtml(cls.title)}</h3>
+            <p class="text-sm text-gray-500 mt-0.5">
+              ${formatDate(cls.date)} &middot; ${escapeHtml(cls.startTime)} &middot; ${cls.duration} perc
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 text-sm">
+            <button class="participants-btn btn-secondary btn-sm flex items-center gap-1" data-id="${cls.id}">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+              </svg>
+              ${cls.currentBookings || 0}/${cls.maxCapacity}
+            </button>
+            ${!isPast ? `
+              <button class="edit-btn p-2 hover:bg-sage-50 rounded-lg transition" data-id="${cls.id}" title="Szerkesztés">
+                <svg class="w-4 h-4 text-sage-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                </svg>
+              </button>
+              <button class="delete-btn p-2 hover:bg-red-50 rounded-lg transition" data-id="${cls.id}" title="Törlés">
+                <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // ── Show participants ────────────────────────────
+    async function showParticipants(cls) {
+      participantsTitle.textContent = `${cls.title} – Résztvevők`;
+      participantsList.innerHTML = `
+        <div class="flex justify-center py-8">
+          <div class="w-8 h-8 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+        </div>`;
+      participantsModal.classList.remove('hidden');
+
+      try {
+        const bookings = await getBookingsForClass(cls.id);
+        if (bookings.length === 0) {
+          participantsList.innerHTML = `
+            <p class="text-center text-gray-400 py-8">Még senki sem jelentkezett erre az órára.</p>`;
+          return;
+        }
+
+        participantsList.innerHTML = `
+          <div class="text-sm text-gray-500 mb-3">${bookings.length} / ${cls.maxCapacity} fő</div>
+          <ul class="space-y-2">
+            ${bookings.map((b, i) => `
+              <li class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div class="w-8 h-8 rounded-full bg-sage-200 text-sage-700 flex items-center justify-center text-sm font-bold">
+                  ${i + 1}
+                </div>
+                <div>
+                  <p class="font-medium text-gray-800 text-sm">${escapeHtml(b.userName)}</p>
+                  <p class="text-xs text-gray-400">${escapeHtml(b.userEmail)}</p>
+                </div>
+              </li>
+            `).join('')}
+          </ul>
+        `;
+      } catch (err) {
+        participantsList.innerHTML = `<p class="text-red-500 text-center py-8">Hiba: ${escapeHtml(err.message)}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>

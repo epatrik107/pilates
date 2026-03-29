@@ -1,0 +1,101 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ═══ USERS ═══════════════════════════════════════════════
+    // Users can NEVER set themselves as admin.
+    // Admin role can only be assigned via the Firebase Console!
+    match /users/{userId} {
+      allow read: if isSignedIn();
+
+      allow create: if isOwner(userId)
+        && request.resource.data.role == 'user'
+        && request.resource.data.keys().hasAll(['name', 'email', 'role', 'createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.email.size() >= 5
+        && request.resource.data.email.size() <= 320;
+
+      // Profile update: the role field cannot be changed
+      allow update: if isOwner(userId)
+        && request.resource.data.role == resource.data.role;
+
+      allow delete: if false;
+    }
+
+    // ═══ CLASSES ═════════════════════════════════════════════
+    match /classes/{classId} {
+      // Anyone can read (schedule is public)
+      allow read: if true;
+
+      // Only admins can create; new classes always start with 0 bookings
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasAll([
+             'title','type','date','startTime','duration',
+             'maxCapacity','currentBookings','instructorId','instructorName'
+           ])
+        && request.resource.data.currentBookings == 0
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 1
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.maxCapacity is int
+        && request.resource.data.maxCapacity > 0
+        && request.resource.data.maxCapacity <= 100;
+
+      // Admins can update anything.
+      // Signed-in users can ONLY modify the currentBookings field
+      // (required for transactional bookings), and cannot exceed the limit.
+      allow update: if isAdmin()
+        || (
+          isSignedIn()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentBookings'])
+          && request.resource.data.currentBookings is int
+          && request.resource.data.currentBookings >= 0
+          && request.resource.data.currentBookings <= resource.data.maxCapacity
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    // ═══ BOOKINGS ════════════════════════════════════════════
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn();
+
+      // You can only create bookings for yourself (userId == auth uid)
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasAll([
+             'userId','classId','classTitle','classDate','classStartTime','bookedAt'
+           ])
+        && request.resource.data.userId is string
+        && request.resource.data.classId is string
+        && request.resource.data.classDate is string;
+
+      // Only the calendarEventId field can be updated (Google Calendar sync)
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['calendarEventId']);
+
+      // You can delete your own booking, or admins can delete anyone's
+      allow delete: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+  }
+}

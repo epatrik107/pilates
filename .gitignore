@@ -1,0 +1,38 @@
+# ═══════════════════════════════════════════════════════════
+#  SECURITY WARNING
+#  The files/folders below MUST NOT be committed to the repo!
+# ═══════════════════════════════════════════════════════════
+
+# Environment variables and secret keys
+.env
+.env.local
+.env.production
+.env*.local
+
+# Editor and system files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Node (if you later add npm)
+node_modules/
+npm-debug.log*
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# IMPORTANT NOTE:
+# The Firebase apiKey in js/firebase-config.js is a PUBLIC key
+# that CAN be committed – this is NOT a security risk.
+# Security is enforced by Firestore Security Rules.
+#
+# NEVER commit secret keys here:
+# - Stripe Secret Key
+# - SendGrid API Key
+# - Any server-side secret key
+# If you need these, store them in Cloud Functions, NOT in the frontend!

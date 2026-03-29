@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regisztráció – Pilates Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sage: { 50:'#f4f7f0',100:'#e6edde',200:'#cddabd',300:'#a9bf93',400:'#87a46e',500:'#6b8a53',600:'#536d3f',700:'#425634',800:'#37462d',900:'#2f3b27' },
+            cream: '#faf8f4'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="flex items-center justify-center min-h-screen px-4">
+
+  <div class="w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="index.html" class="inline-block">
+        <h1 class="text-3xl font-display font-bold text-sage-700">Pilates Studio</h1>
+      </a>
+      <p class="mt-2 text-gray-500 text-sm">Hozd létre fiókodat és foglalj órát</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+      <form id="register-form" class="space-y-5">
+        <div>
+          <label for="name" class="form-label">Teljes név</label>
+          <input type="text" id="name" class="form-input" placeholder="Kovács Anna" required />
+        </div>
+
+        <div>
+          <label for="email" class="form-label">E-mail cím</label>
+          <input type="email" id="email" class="form-input" placeholder="nev@example.com" required />
+        </div>
+
+        <div>
+          <label for="password" class="form-label">Jelszó</label>
+          <input type="password" id="password" class="form-input" placeholder="Min. 8 karakter, nagy/kisbetű, szám" required minlength="8" />
+          <!-- Password strength meter -->
+          <div id="pw-strength" class="mt-2 hidden">
+            <div class="flex gap-1 mb-1">
+              <div class="h-1.5 flex-1 rounded-full bg-gray-200 transition-colors" id="pw-bar-1"></div>
+              <div class="h-1.5 flex-1 rounded-full bg-gray-200 transition-colors" id="pw-bar-2"></div>
+              <div class="h-1.5 flex-1 rounded-full bg-gray-200 transition-colors" id="pw-bar-3"></div>
+              <div class="h-1.5 flex-1 rounded-full bg-gray-200 transition-colors" id="pw-bar-4"></div>
+            </div>
+            <ul id="pw-checks" class="text-xs space-y-0.5 mt-1"></ul>
+          </div>
+        </div>
+
+        <div>
+          <label for="password2" class="form-label">Jelszó megerősítése</label>
+          <input type="password" id="password2" class="form-input" placeholder="••••••••" required minlength="8" />
+        </div>
+
+        <button type="submit" id="register-btn" class="btn-primary w-full">
+          Regisztráció
+        </button>
+
+        <p id="error-msg" class="text-red-500 text-sm text-center hidden"></p>
+      </form>
+
+      <div class="mt-6 text-center text-sm text-gray-500">
+        Már van fiókod?
+        <a href="login.html" class="text-sage-600 font-medium hover:underline">Jelentkezz be</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { registerUser } from './js/auth.js';
+    import { auth, onAuthStateChanged } from './js/firebase-config.js';
+    import { validatePassword, checkRateLimit } from './js/ui.js';
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) window.location.href = 'index.html';
+    });
+
+    const form        = document.getElementById('register-form');
+    const errorMsg    = document.getElementById('error-msg');
+    const btn         = document.getElementById('register-btn');
+    const pwInput     = document.getElementById('password');
+    const pwStrength  = document.getElementById('pw-strength');
+    const pwChecks    = document.getElementById('pw-checks');
+
+    // ── Real-time password strength meter
+    pwInput.addEventListener('input', () => {
+      const val = pwInput.value;
+      if (!val) { pwStrength.classList.add('hidden'); return; }
+      pwStrength.classList.remove('hidden');
+
+      const result = validatePassword(val);
+      const colors = ['bg-red-400', 'bg-orange-400', 'bg-amber-400', 'bg-green-500'];
+      const barColor = colors[Math.min(result.strength - 1, 3)] || 'bg-gray-200';
+
+      for (let i = 1; i <= 4; i++) {
+        const bar = document.getElementById(`pw-bar-${i}`);
+        bar.className = `h-1.5 flex-1 rounded-full transition-colors ${i <= result.strength ? barColor : 'bg-gray-200'}`;
+      }
+
+      pwChecks.innerHTML = result.checks.map(c =>
+        `<li class="${c.ok ? 'text-green-600' : 'text-gray-400'}">
+          ${c.ok ? '&#10003;' : '&#10007;'} ${c.msg}
+        </li>`
+      ).join('');
+    });
+
+    // ── Registration submit
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.classList.add('hidden');
+
+      // Rate limit check
+      const rl = checkRateLimit('register', 5, 60000);
+      if (!rl.allowed) {
+        errorMsg.textContent = rl.message;
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const name      = document.getElementById('name').value.trim();
+      const email     = document.getElementById('email').value.trim();
+      const password  = pwInput.value;
+      const password2 = document.getElementById('password2').value;
+
+      // Password strength validation
+      const pwResult = validatePassword(password);
+      if (!pwResult.valid) {
+        errorMsg.textContent = 'A jelszó nem elég erős: ' + pwResult.errors.join(', ');
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      if (password !== password2) {
+        errorMsg.textContent = 'A két jelszó nem egyezik!';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Regisztráció...';
+
+      try {
+        await registerUser(name, email, password);
+        window.location.href = 'index.html';
+      } catch (err) {
+        const messages = {
+          'auth/email-already-in-use': 'Ez az e-mail cím már foglalt.',
+          'auth/weak-password':        'A jelszó túl gyenge.',
+          'auth/invalid-email':        'Érvénytelen e-mail cím formátum.'
+        };
+        const code = err.code || '';
+        errorMsg.textContent = messages[code] || err.message || 'Hiba történt a regisztráció során.';
+        errorMsg.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Regisztráció';
+      }
+    });
+  </script>
+</body>
+</html>

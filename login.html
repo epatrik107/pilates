@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bejelentkezés – Pilates Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sage: { 50:'#f4f7f0',100:'#e6edde',200:'#cddabd',300:'#a9bf93',400:'#87a46e',500:'#6b8a53',600:'#536d3f',700:'#425634',800:'#37462d',900:'#2f3b27' },
+            cream: '#faf8f4'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="flex items-center justify-center min-h-screen px-4">
+
+  <div class="w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="index.html" class="inline-block">
+        <h1 class="text-3xl font-display font-bold text-sage-700">Pilates Studio</h1>
+      </a>
+      <p class="mt-2 text-gray-500 text-sm">Jelentkezz be a fiókodba</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+      <form id="login-form" class="space-y-5">
+        <div>
+          <label for="email" class="form-label">E-mail cím</label>
+          <input type="email" id="email" class="form-input" placeholder="nev@example.com" required />
+        </div>
+
+        <div>
+          <label for="password" class="form-label">Jelszó</label>
+          <input type="password" id="password" class="form-input" placeholder="••••••••" required />
+        </div>
+
+        <button type="submit" id="login-btn" class="btn-primary w-full">
+          Bejelentkezés
+        </button>
+
+        <p id="error-msg" class="text-red-500 text-sm text-center hidden"></p>
+      </form>
+
+      <div class="mt-6 text-center text-sm text-gray-500">
+        Még nincs fiókod?
+        <a href="register.html" class="text-sage-600 font-medium hover:underline">Regisztrálj itt</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { loginUser, getUserProfile } from './js/auth.js';
+    import { auth, onAuthStateChanged } from './js/firebase-config.js';
+    import { checkRateLimit } from './js/ui.js';
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const profile = await getUserProfile(user.uid);
+        window.location.href = profile?.role === 'admin' ? 'admin.html' : 'index.html';
+      }
+    });
+
+    const form     = document.getElementById('login-form');
+    const errorMsg = document.getElementById('error-msg');
+    const btn      = document.getElementById('login-btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.classList.add('hidden');
+
+      // Client-side rate limit (supplements Firebase's built-in protection)
+      const rl = checkRateLimit('login', 5, 60000);
+      if (!rl.allowed) {
+        errorMsg.textContent = rl.message;
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Bejelentkezés...';
+
+      try {
+        const email    = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const user     = await loginUser(email, password);
+
+        const profile = await getUserProfile(user.uid);
+        window.location.href = profile?.role === 'admin' ? 'admin.html' : 'index.html';
+      } catch (err) {
+        const messages = {
+          'auth/user-not-found':    'Ez az e-mail cím nincs regisztrálva.',
+          'auth/wrong-password':    'Hibás jelszó.',
+          'auth/invalid-credential':'Hibás e-mail cím vagy jelszó.',
+          'auth/too-many-requests': 'Túl sok próbálkozás. A Firebase átmenetileg letiltotta ezt a fiókot. Próbáld újra pár perc múlva.',
+          'auth/invalid-email':     'Érvénytelen e-mail cím formátum.',
+          'auth/network-request-failed': 'Hálózati hiba. Ellenőrizd az internetkapcsolatod.'
+        };
+        const code = err.code || '';
+        errorMsg.textContent = messages[code] || 'Hiba történt a bejelentkezés során.';
+        errorMsg.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Bejelentkezés';
+      }
+    });
+  </script>
+</body>
+</html>

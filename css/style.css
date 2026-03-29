@@ -1,0 +1,145 @@
+/* ═══════════════════════════════════════════════════════════
+   Pilates Studio – Custom styles (Tailwind supplement)
+   ═══════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+:root {
+  --sage-50:  #f4f7f0;
+  --sage-100: #e6edde;
+  --sage-200: #cddabd;
+  --sage-300: #a9bf93;
+  --sage-400: #87a46e;
+  --sage-500: #6b8a53;
+  --sage-600: #536d3f;
+  --sage-700: #425634;
+  --sage-800: #37462d;
+  --sage-900: #2f3b27;
+  --cream:    #faf8f4;
+  --rose-400: #e8a0a0;
+  --rose-500: #d4787a;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sage-300) transparent;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--cream);
+  color: #2d3436;
+  min-height: 100vh;
+}
+
+h1, h2, h3, .font-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* ── Navbar ──────────────────────────────────────────────── */
+.nav-link {
+  @apply px-3 py-2 rounded-lg text-sm font-medium text-gray-600
+         hover:text-sage-700 hover:bg-sage-50 transition-all duration-200;
+}
+
+.nav-link-primary {
+  @apply bg-sage-600 text-white hover:bg-sage-700 hover:text-white;
+}
+
+/* ── Cards ───────────────────────────────────────────────── */
+.class-card {
+  @apply bg-white rounded-2xl border border-gray-100 p-5
+         shadow-sm hover:shadow-md transition-all duration-300;
+}
+
+.class-card:hover {
+  transform: translateY(-2px);
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn-primary {
+  @apply bg-sage-600 text-white px-6 py-2.5 rounded-xl font-medium
+         hover:bg-sage-700 active:scale-[0.98] transition-all duration-200
+         disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-sage-600
+         disabled:active:scale-100;
+}
+
+.btn-secondary {
+  @apply border border-sage-300 text-sage-700 px-6 py-2.5 rounded-xl font-medium
+         hover:bg-sage-50 active:scale-[0.98] transition-all duration-200;
+}
+
+.btn-danger {
+  @apply bg-red-500 text-white px-6 py-2.5 rounded-xl font-medium
+         hover:bg-red-600 active:scale-[0.98] transition-all duration-200;
+}
+
+.btn-sm {
+  @apply px-4 py-1.5 text-sm rounded-lg;
+}
+
+/* ── Form fields ─────────────────────────────────────────── */
+.form-input {
+  @apply w-full px-4 py-2.5 rounded-xl border border-gray-200
+         bg-white text-gray-800 placeholder-gray-400
+         focus:ring-2 focus:ring-sage-300 focus:border-sage-400
+         focus:outline-none transition-all duration-200;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1.5;
+}
+
+/* ── Class type badges ───────────────────────────────────── */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-mat       { @apply bg-sage-100 text-sage-700; }
+.badge-reformer  { @apply bg-purple-100 text-purple-700; }
+.badge-tower     { @apply bg-amber-100 text-amber-700; }
+.badge-prenatal  { @apply bg-pink-100 text-pink-700; }
+.badge-default   { @apply bg-gray-100 text-gray-700; }
+
+/* ── Capacity indicator ──────────────────────────────────── */
+.capacity-bar {
+  @apply h-1.5 rounded-full bg-gray-100 overflow-hidden;
+}
+
+.capacity-bar-fill {
+  @apply h-full rounded-full transition-all duration-500;
+}
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+
+/* ── Hero section ────────────────────────────────────────── */
+.hero-gradient {
+  background: linear-gradient(135deg, var(--sage-50) 0%, #e8ede3 50%, #f0ece6 100%);
+}
+
+/* ── Mobile menu ─────────────────────────────────────────── */
+#mobile-menu .nav-link {
+  @apply block w-full text-left;
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+.empty-state {
+  @apply flex flex-col items-center justify-center py-16 text-center;
+}
+
+.empty-state svg {
+  @apply w-16 h-16 text-gray-300 mb-4;
+}
