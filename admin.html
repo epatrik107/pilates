@@ -261,7 +261,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { initNavbar, requireAdmin, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
-    import { createClass, updateClass, deleteClass, getAllClasses, getUpcomingClasses, getClassTypes, saveClassTypes, cloneWeekClasses, createRecurringClasses } from './js/classes.js';
+    import { createClass, updateClass, deleteClass, getAllClasses, getUpcomingClasses, getClassTypes, saveClassTypes, cloneWeekClasses, createRecurringClasses, saveInstructorPhoto, getInstructorPhoto } from './js/classes.js';
     import { getBookingsForClass, setAttendance } from './js/bookings.js';
     import { getWaitlistForClass } from './js/waitlist.js';
     import { exportBookingsCSV, exportUsersCSV } from './js/export.js';
@@ -276,9 +276,13 @@
     requireAdmin(async (user, profile) => {
       adminUser    = user;
       adminProfile = profile;
-      if (profile?.photoURL) {
-        document.getElementById('admin-photo-preview').src = profile.photoURL;
-      }
+      try {
+        const photo = await getInstructorPhoto();
+        if (photo) {
+          document.getElementById('admin-photo-preview').src = photo;
+          adminProfile.photoURL = photo;
+        }
+      } catch {}
       classTypes   = await getClassTypes();
       renderTypesBadges();
       populateTypeSelect();
@@ -811,6 +815,7 @@
         const dataURL = await resizeImage(file, 200);
         document.getElementById('admin-photo-preview').src = dataURL;
         await updateUserPhoto(adminUser.uid, dataURL);
+        await saveInstructorPhoto(dataURL);
         adminProfile.photoURL = dataURL;
         showToast('Profilkép frissítve!', 'success');
       } catch (err) {

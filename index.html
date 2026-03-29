@@ -104,7 +104,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { auth, onAuthStateChanged } from './js/firebase-config.js';
-    import { getUpcomingClasses, getClassTypes } from './js/classes.js';
+    import { getUpcomingClasses, getClassTypes, getInstructorPhoto } from './js/classes.js';
     import { bookClass, getUserBookingForClass, cancelBooking } from './js/bookings.js';
     import { joinWaitlist, leaveWaitlist, getUserWaitlistEntry, checkWaitlistPromotions, watchWaitlistedClasses } from './js/waitlist.js';
     import { initNavbar, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
@@ -117,6 +117,7 @@
     const dayCheckboxes    = document.querySelectorAll('.day-filter');
 
     let allClasses = [], currentUser = null, classTypes = [];
+    let defaultInstructorPhoto = 'img/szonja.png';
     let unwatchWaitlist = null;
 
     onAuthStateChanged(auth, async (user) => {
@@ -148,7 +149,12 @@
     async function loadClasses() {
       showLoading(container);
       try {
-        [allClasses, classTypes] = await Promise.all([getUpcomingClasses(), getClassTypes()]);
+        const [classes, types, studioPhoto] = await Promise.all([
+          getUpcomingClasses(), getClassTypes(), getInstructorPhoto()
+        ]);
+        allClasses = classes;
+        classTypes = types;
+        if (studioPhoto) defaultInstructorPhoto = studioPhoto;
         populateInstructorFilter();
         populateTypeFilter();
         renderClasses();
@@ -240,7 +246,7 @@
             actionBtn = `<a href="login.html" class="btn btn-sm btn-motibro-green">Bejelentkezés</a>`;
           }
 
-          const instructorImg = cls.instructorPhoto || 'img/szonja.png';
+          const instructorImg = cls.instructorPhoto || defaultInstructorPhoto;
 
           // Desktop
           html += `<div class="schedule-row d-none d-md-flex align-items-center row px-3">

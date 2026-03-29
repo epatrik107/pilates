@@ -6,6 +6,18 @@ import { db } from './firebase-config.js';
 
 const classesRef = collection(db, 'classes');
 
+// ── Instructor photo (stored in public settings) ────────────
+export async function getInstructorPhoto() {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'studio'));
+    return snap.exists() ? snap.data().instructorPhoto || '' : '';
+  } catch { return ''; }
+}
+
+export async function saveInstructorPhoto(photoDataURL) {
+  await setDoc(doc(db, 'settings', 'studio'), { instructorPhoto: photoDataURL }, { merge: true });
+}
+
 // ── Default class types (used when Firestore doc doesn't exist yet) ──
 const DEFAULT_CLASS_TYPES = [
   { value: 'mat',      label: 'Mat Pilates', bgColor: '#e6edde', textColor: '#425634' },

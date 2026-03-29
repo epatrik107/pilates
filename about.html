@@ -56,6 +56,7 @@
         <div class="card shadow-sm border overflow-hidden mb-4">
           <div class="bg-sage-light text-center p-4 p-md-5 border-bottom border-sage">
             <img
+              id="instructor-photo"
               src="img/szonja.png"
               alt="Szonja – Pilates oktató"
               class="rounded-circle mx-auto mb-4 shadow border border-4 border-white"
@@ -165,7 +166,11 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { initNavbar } from './js/ui.js';
+    import { getInstructorPhoto } from './js/classes.js';
     initNavbar();
+    getInstructorPhoto().then(url => {
+      if (url) document.getElementById('instructor-photo').src = url;
+    });
   </script>
   <script>
     if ('serviceWorker' in navigator) {
