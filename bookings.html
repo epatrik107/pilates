@@ -297,9 +297,10 @@
     async function loadPastBookings(userId) {
       try {
         const past = await getUserPastBookings(userId);
-        if (past.length === 0) return;
+        const section = document.getElementById('past-bookings-section');
+        if (past.length === 0) { section.style.display = 'none'; return; }
 
-        document.getElementById('past-bookings-section').style.display = '';
+        section.style.display = '';
         document.getElementById('past-count').textContent = past.length;
 
         const container = document.getElementById('past-bookings-container');
@@ -323,7 +324,13 @@
             </div>
           </div>
         `).join('');
-      } catch (err) { /* silent */ }
+      } catch (err) {
+        console.error('loadPastBookings error:', err);
+        const section = document.getElementById('past-bookings-section');
+        section.style.display = '';
+        document.getElementById('past-bookings-container').innerHTML =
+          `<p class="text-danger small">Hiba: ${escapeHtml(err.message)}</p>`;
+      }
     }
   </script>
   <script>
