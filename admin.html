@@ -80,7 +80,7 @@
               Kép feltöltése
             </label>
             <input type="file" id="photo-upload" accept="image/*" class="hidden">
-            <p class="small text-muted mb-0">Az órarendben is ez jelenik meg. Max 200×200px JPEG.</p>
+            <p class="small text-muted mb-0">Az órarendben és a Rólam oldalon is ez jelenik meg.</p>
           </div>
         </div>
       </div>
@@ -961,7 +961,7 @@
       if (!file.type.startsWith('image/')) { showToast('Csak képfájl tölthető fel!', 'error'); return; }
 
       try {
-        const dataURL = await resizeImage(file, 200);
+        const dataURL = await resizeImage(file, 400);
         document.getElementById('admin-photo-preview').src = dataURL;
         await updateUserPhoto(adminUser.uid, dataURL);
         await saveInstructorPhoto(dataURL);
