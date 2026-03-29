@@ -106,7 +106,7 @@
     import { auth, onAuthStateChanged } from './js/firebase-config.js';
     import { getUpcomingClasses, getClassTypes } from './js/classes.js';
     import { bookClass, getUserBookingForClass, cancelBooking } from './js/bookings.js';
-    import { joinWaitlist, leaveWaitlist, getUserWaitlistEntry, checkWaitlistPromotions } from './js/waitlist.js';
+    import { joinWaitlist, leaveWaitlist, getUserWaitlistEntry, checkWaitlistPromotions, watchWaitlistedClasses } from './js/waitlist.js';
     import { initNavbar, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
 
     initNavbar();
@@ -117,9 +117,11 @@
     const dayCheckboxes    = document.querySelectorAll('.day-filter');
 
     let allClasses = [], currentUser = null, classTypes = [];
+    let unwatchWaitlist = null;
 
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
+      if (unwatchWaitlist) { unwatchWaitlist(); unwatchWaitlist = null; }
       await loadClasses();
       if (user && allClasses.length) {
         try {
@@ -127,6 +129,14 @@
           for (const p of promos) {
             showToast(`Felszabadult hely: ${p.classData.title} (${p.classData.date})! Foglald le az órarendben!`, 'warning');
           }
+        } catch (e) { /* silent */ }
+
+        try {
+          unwatchWaitlist = await watchWaitlistedClasses(user.uid, async (entry, cls) => {
+            showToast(`Felszabadult egy hely: ${entry.classTitle} (${entry.classDate})! Foglald le most!`, 'warning');
+            allClasses = await getUpcomingClasses();
+            renderClasses().catch(() => {});
+          });
         } catch (e) { /* silent */ }
       }
     });

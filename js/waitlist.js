@@ -1,6 +1,6 @@
 import {
   collection, addDoc, getDocs, deleteDoc, doc,
-  query, where, orderBy, serverTimestamp, getCountFromServer
+  query, where, orderBy, serverTimestamp, getCountFromServer, onSnapshot
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 import { db } from './firebase-config.js';
 
@@ -67,4 +67,31 @@ export async function checkWaitlistPromotions(userId, allClasses) {
     }
   }
   return promotable;
+}
+
+// Real-time watcher: listens to class docs the user is waitlisted on.
+// Calls onSpotFreed(entry, classData) whenever a full class gets a free spot.
+// Returns an unsubscribe function.
+export async function watchWaitlistedClasses(userId, onSpotFreed) {
+  const entries = await getUserWaitlistEntries(userId);
+  if (!entries.length) return () => {};
+
+  const unsubscribers = [];
+  const alreadyNotified = new Set();
+
+  for (const entry of entries) {
+    let firstSnapshot = true;
+    const unsub = onSnapshot(doc(db, 'classes', entry.classId), (snap) => {
+      if (firstSnapshot) { firstSnapshot = false; return; }
+      if (!snap.exists()) return;
+      const cls = { id: snap.id, ...snap.data() };
+      if (cls.currentBookings < cls.maxCapacity && !alreadyNotified.has(cls.id)) {
+        alreadyNotified.add(cls.id);
+        onSpotFreed(entry, cls);
+      }
+    });
+    unsubscribers.push(unsub);
+  }
+
+  return () => unsubscribers.forEach(fn => fn());
 }
