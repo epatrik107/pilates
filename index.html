@@ -238,12 +238,12 @@
             } else if (isFull && waitlistEntry) {
               actionBtn = `<button class="btn btn-sm btn-outline-warning waitlist-leave-btn" data-waitlist-id="${waitlistEntry.id}">Várólistán vagy</button>`;
             } else if (isFull) {
-              actionBtn = `<button class="btn btn-sm btn-motibro-orange waitlist-join-btn" data-class-id="${cls.id}">Várólistára</button>`;
+              actionBtn = `<button class="btn btn-sm btn-sage-outline waitlist-join-btn" data-class-id="${cls.id}">Várólistára</button>`;
             } else {
-              actionBtn = `<button class="btn btn-sm btn-motibro-green book-btn" data-class-id="${cls.id}">Foglalás</button>`;
+              actionBtn = `<button class="btn btn-sm btn-sage book-btn" data-class-id="${cls.id}">Foglalás</button>`;
             }
           } else {
-            actionBtn = `<a href="login.html" class="btn btn-sm btn-motibro-green">Bejelentkezés</a>`;
+            actionBtn = `<a href="login.html" class="btn btn-sm btn-sage">Bejelentkezés</a>`;
           }
 
           const instructorImg = cls.instructorPhoto || defaultInstructorPhoto;
