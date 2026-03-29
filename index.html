@@ -235,7 +235,12 @@
           let actionBtn;
           if (currentUser) {
             if (userBooking) {
-              actionBtn = `<button class="btn btn-sm btn-outline-secondary cancel-btn" data-booking-id="${userBooking.id}" data-class-id="${cls.id}">Lemondás</button>`;
+              const classStart = new Date(`${cls.date}T${cls.startTime || '00:00'}`);
+              const hoursUntil = (classStart - new Date()) / 3600000;
+              const canCancel  = hoursUntil > 24;
+              actionBtn = canCancel
+                ? `<button class="btn btn-sm btn-outline-secondary cancel-btn" data-booking-id="${userBooking.id}" data-class-id="${cls.id}">Lemondás</button>`
+                : `<button class="btn btn-sm btn-outline-secondary" disabled title="Lemondás már nem lehetséges (24 órán belül)">Foglalva</button>`;
             } else if (isFull && waitlistEntry) {
               actionBtn = `<button class="btn btn-sm btn-outline-warning waitlist-leave-btn" data-waitlist-id="${waitlistEntry.id}">Várólistán vagy</button>`;
             } else if (isFull) {

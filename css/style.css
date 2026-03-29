@@ -178,6 +178,9 @@ a.text-sage:hover { color: var(--sage-700); }
   box-shadow: none;
 }
 
+/* ── Admin tabs ──────────────────────────────────────────── */
+#admin-tabs .nav-link.active { background: var(--sage-600) !important; color: #fff !important; border-color: var(--sage-600) !important; }
+
 /* ── Misc helpers ────────────────────────────────────────── */
 .hidden { display: none !important; }
 .text-sage { color: var(--sage-600); }

@@ -144,3 +144,9 @@ export async function getBookingsForClass(classId) {
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
+
+// ── Get ALL bookings (admin: statistics) ─────────────────────
+export async function getAllBookings() {
+  const snap = await getDocs(query(bookingsRef, orderBy('classDate')));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
