@@ -26,16 +26,9 @@ export async function leaveWaitlist(waitlistId) {
 }
 
 export async function getUserWaitlistEntry(userId, classId) {
-  const allQ = query(waitlistRef, where('classId', '==', classId), orderBy('addedAt'));
-  const allSnap = await getDocs(allQ);
-  let position = 0;
-  for (const d of allSnap.docs) {
-    position++;
-    if (d.data().userId === userId) {
-      return { id: d.id, ...d.data(), position };
-    }
-  }
-  return null;
+  const q = query(waitlistRef, where('userId', '==', userId), where('classId', '==', classId));
+  const snap = await getDocs(q);
+  return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
 }
 
 export async function getUserWaitlistEntries(userId) {

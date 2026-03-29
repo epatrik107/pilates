@@ -25,7 +25,8 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isSignedIn();
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
       allow create: if isOwner(userId)
         && request.resource.data.role == 'user'
         && request.resource.data.name is string
@@ -59,7 +60,8 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.classId is string
@@ -80,7 +82,8 @@ service cloud.firestore {
     }
 
     match /waitlist/{waitlistId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.classId is string
