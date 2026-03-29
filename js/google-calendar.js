@@ -21,8 +21,8 @@ export function generateGoogleCalendarUrl(classData) {
     action:   'TEMPLATE',
     text:     classData.title,
     dates:    `${start}/${end}`,
-    details:  `Edzo: ${classData.instructorName || ''}\n${classData.description || ''}\n\nFoglalva a Pilates Studio alkalmazasbol`,
-    location: classData.location || 'Pilates Studio',
+    details:  `Edzo: ${classData.instructorName || ''}\n${classData.description || ''}\n\nFoglalva a Balance Studio alkalmazasbol`,
+    location: classData.location || 'Balance Studio',
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -133,9 +133,9 @@ export async function addEventToGoogleCalendar(classData) {
       `Edzo: ${classData.instructorName || ''}`,
       classData.description || '',
       '',
-      'Foglalva a Pilates Studio alkalmazasbol'
+      'Foglalva a Balance Studio alkalmazasbol'
     ].filter(Boolean).join('\n'),
-    location: classData.location || 'Pilates Studio',
+    location: classData.location || 'Balance Studio',
     start: { dateTime: startDT, timeZone: 'Europe/Budapest' },
     end:   { dateTime: endDT,   timeZone: 'Europe/Budapest' },
     reminders: {

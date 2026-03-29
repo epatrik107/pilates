@@ -1,6 +1,6 @@
 {
-  "name": "Pilates Studio",
-  "short_name": "Pilates",
+  "name": "Balance Studio",
+  "short_name": "Balance",
   "description": "Online pilates órafoglalás – kis csoportos edzések kezdőtől haladóig",
   "start_url": "/pilates/index.html",
   "scope": "/pilates/",
