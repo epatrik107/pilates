@@ -89,3 +89,64 @@ export async function incrementBookings(classId, delta) {
   const ref = doc(db, 'classes', classId);
   await updateDoc(ref, { currentBookings: increment(delta) });
 }
+
+// ── Clone a week of classes (+7 days) ───────────────────────
+export async function cloneWeekClasses(sourceMonday, instructorId, instructorName) {
+  const sundayStr = addDays(sourceMonday, 6);
+  const q = query(classesRef, where('date', '>=', sourceMonday), where('date', '<=', sundayStr), orderBy('date'));
+  const snap = await getDocs(q);
+
+  if (snap.empty) throw new Error('Nincs óra az adott héten!');
+
+  const created = [];
+  for (const d of snap.docs) {
+    const src = d.data();
+    const newDate = addDays(src.date, 7);
+    const ref = await addDoc(classesRef, {
+      title:           src.title,
+      type:            src.type,
+      date:            newDate,
+      startTime:       src.startTime,
+      duration:        src.duration,
+      maxCapacity:     src.maxCapacity,
+      currentBookings: 0,
+      instructorId:    instructorId || src.instructorId,
+      instructorName:  instructorName || src.instructorName,
+      description:     src.description || '',
+      location:        src.location || '',
+      createdAt:       serverTimestamp()
+    });
+    created.push(ref.id);
+  }
+  return created;
+}
+
+// ── Create recurring classes (weekly for N weeks) ───────────
+export async function createRecurringClasses(data, weeks) {
+  const created = [];
+  for (let i = 0; i < weeks; i++) {
+    const date = addDays(data.date, i * 7);
+    const ref = await addDoc(classesRef, {
+      title:           data.title,
+      type:            data.type,
+      date,
+      startTime:       data.startTime,
+      duration:        parseInt(data.duration) || 60,
+      maxCapacity:     parseInt(data.maxCapacity) || 10,
+      currentBookings: 0,
+      instructorId:    data.instructorId,
+      instructorName:  data.instructorName,
+      description:     data.description || '',
+      location:        data.location || 'Stúdió',
+      createdAt:       serverTimestamp()
+    });
+    created.push(ref.id);
+  }
+  return created;
+}
+
+function addDays(dateStr, days) {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+}

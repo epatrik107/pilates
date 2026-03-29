@@ -71,7 +71,21 @@ service cloud.firestore {
         && request.resource.data.keys().hasAll(['userId', 'classId', 'userName', 'userEmail', 'classTitle', 'classDate'])
         && classHasCapacity(request.resource.data.classId);
       allow update: if isSignedIn()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['calendarEventId']);
+        && (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['calendarEventId'])
+          || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attended']))
+        );
+      allow delete: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /waitlist/{waitlistId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.classId is string
+        && request.resource.data.userName is string
+        && request.resource.data.classDate is string;
       allow delete: if isSignedIn()
         && (resource.data.userId == request.auth.uid || isAdmin());
     }

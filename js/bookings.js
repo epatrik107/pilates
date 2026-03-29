@@ -132,6 +132,12 @@ export async function getUserBookings(userId) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
+// ── Set attendance status (admin) ────────────────────────────
+export async function setAttendance(bookingId, attended) {
+  const ref = doc(db, 'bookings', bookingId);
+  await updateDoc(ref, { attended });
+}
+
 // ── Get all bookings for a class (admin: participants list) ─
 export async function getBookingsForClass(classId) {
   const q    = query(bookingsRef, where('classId', '==', classId), orderBy('bookedAt'));
