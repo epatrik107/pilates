@@ -130,9 +130,10 @@
         } catch (e) { /* silent */ }
       }
     });
-    filterType.addEventListener('change', renderClasses);
-    filterInstructor.addEventListener('change', renderClasses);
-    dayCheckboxes.forEach(cb => cb.addEventListener('change', renderClasses));
+    const safeRender = () => renderClasses().catch(() => {});
+    filterType.addEventListener('change', safeRender);
+    filterInstructor.addEventListener('change', safeRender);
+    dayCheckboxes.forEach(cb => cb.addEventListener('change', safeRender));
 
     async function loadClasses() {
       showLoading(container);
@@ -211,7 +212,7 @@
 
           let waitlistEntry = null;
           if (currentUser && isFull && !userBooking) {
-            waitlistEntry = await getUserWaitlistEntry(currentUser.uid, cls.id);
+            try { waitlistEntry = await getUserWaitlistEntry(currentUser.uid, cls.id); } catch (e) { /* waitlist query failed, show join button */ }
           }
 
           let actionBtn;
