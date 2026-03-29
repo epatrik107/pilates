@@ -223,7 +223,7 @@
         </div>
         <div class="col-6 col-md-3">
           <div class="card border shadow-sm text-center p-3">
-            <p class="small text-muted mb-1">No-show</p>
+            <p class="small text-muted mb-1">Nem jelent meg</p>
             <p id="stat-noshow" class="h3 fw-bold text-danger mb-0">–</p>
           </div>
         </div>
@@ -265,7 +265,7 @@
                   <th>Email</th>
                   <th class="text-center">Foglalás</th>
                   <th class="text-center">Megjelent</th>
-                  <th class="text-center">No-show</th>
+                  <th class="text-center">Nem jelent meg</th>
                   <th class="text-center">Megjelenési %</th>
                 </tr>
               </thead>
@@ -750,7 +750,7 @@
         if (attendedCount || noShowCount) {
           html += `<div class="d-flex gap-3 small mb-3">
             <span class="text-success">Megjelent: ${attendedCount}</span>
-            <span class="text-danger">No-show: ${noShowCount}</span>
+            <span class="text-danger">Nem jelent meg: ${noShowCount}</span>
             ${unmarkedCount ? `<span class="text-muted">Jelöletlen: ${unmarkedCount}</span>` : ''}
           </div>`;
         }
