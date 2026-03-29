@@ -69,7 +69,7 @@
 
         <!-- Email change -->
         <div class="mb-3 pb-3 border-bottom" id="email-change-section">
-          <label class="form-label small fw-medium">E-mail cím módosítása</label>
+          <label for="new-email" class="form-label small fw-medium">E-mail cím módosítása</label>
           <form id="email-change-form" class="d-flex gap-2">
             <input type="email" id="new-email" class="form-control form-control-sm" placeholder="Új e-mail cím" required />
             <button type="submit" id="email-change-btn" class="btn btn-sm btn-sage-outline flex-shrink-0">Módosítás</button>
@@ -80,7 +80,7 @@
 
         <!-- Set password for Google-only users -->
         <div id="set-password-section" class="mb-3 pb-3 border-bottom hidden">
-          <label class="form-label small fw-medium">Jelszó beállítása</label>
+          <label for="set-pw-input" class="form-label small fw-medium">Jelszó beállítása</label>
           <p class="small text-muted mb-2">Google fiókkal regisztráltál. Állíts be jelszót, hogy emailes bejelentkezéssel is elérd a fiókodat.</p>
           <form id="set-password-form" class="d-flex flex-column gap-2" style="max-width:20rem">
             <input type="password" id="set-pw-input" class="form-control form-control-sm" placeholder="Új jelszó (min. 8 karakter)" required minlength="8" />
@@ -92,7 +92,7 @@
 
         <!-- Password change info -->
         <div id="password-section">
-          <label class="form-label small fw-medium">Jelszó módosítása</label>
+          <p class="form-label small fw-medium mb-2">Jelszó módosítása</p>
           <p class="small text-muted mb-2">A jelszavadat a bejelentkezési oldalon az „Elfelejtett jelszó?" funkcióval tudod megváltoztatni.</p>
           <button type="button" id="send-pw-reset-btn" class="btn btn-sm btn-sage-outline">Jelszó-visszaállító email küldése</button>
           <p id="pw-reset-msg" class="small mt-1 mb-0 hidden"></p>
