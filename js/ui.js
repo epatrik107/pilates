@@ -111,6 +111,8 @@ export function showLoading(container) {
 
 // ── Navbar initialization (Bootstrap) ───────────────────────
 export function initNavbar() {
+  initCookieConsent();
+
   const navLinks = document.getElementById('nav-links');
   const navRight = document.getElementById('nav-right');
   if (!navLinks || !navRight) return;
@@ -172,6 +174,32 @@ export function requireAdmin(callback) {
     }
     callback(user, profile);
   });
+}
+
+// ── GDPR Cookie Consent Banner ──────────────────────────────
+export function initCookieConsent() {
+  if (localStorage.getItem('cookie-consent')) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'cookie-banner';
+  banner.innerHTML = `
+    <div class="cookie-banner-inner">
+      <p class="mb-2 mb-sm-0">Az oldal sütiket használ a működéshez (bejelentkezés, munkamenet).
+        Részletek: <a href="privacy.html" class="text-sage fw-medium">Adatvédelem</a></p>
+      <div class="d-flex gap-2">
+        <button id="cookie-accept" class="btn btn-sm btn-sage">Elfogadom</button>
+        <button id="cookie-reject" class="btn btn-sm btn-sage-outline">Csak szükségesek</button>
+      </div>
+    </div>`;
+  document.body.appendChild(banner);
+
+  const dismiss = (val) => {
+    localStorage.setItem('cookie-consent', val);
+    banner.style.transform = 'translateY(100%)';
+    setTimeout(() => banner.remove(), 300);
+  };
+  banner.querySelector('#cookie-accept').onclick = () => dismiss('all');
+  banner.querySelector('#cookie-reject').onclick = () => dismiss('essential');
 }
 
 // ── Helper functions ────────────────────────────────────────

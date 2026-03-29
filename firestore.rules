@@ -27,9 +27,16 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isSignedIn();
       allow create: if isOwner(userId)
-        && request.resource.data.role == 'user';
+        && request.resource.data.role == 'user'
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.email is string
+        && request.resource.data.keys().hasAll(['name', 'email', 'role']);
       allow update: if isOwner(userId)
-        && request.resource.data.role == resource.data.role;
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 100;
       allow delete: if isOwner(userId);
     }
 
@@ -56,6 +63,12 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.classId is string
+        && request.resource.data.userName is string
+        && request.resource.data.userName.size() <= 100
+        && request.resource.data.userEmail is string
+        && request.resource.data.classTitle is string
+        && request.resource.data.classDate is string
+        && request.resource.data.keys().hasAll(['userId', 'classId', 'userName', 'userEmail', 'classTitle', 'classDate'])
         && classHasCapacity(request.resource.data.classId);
       allow update: if isSignedIn()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['calendarEventId']);

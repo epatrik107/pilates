@@ -77,7 +77,8 @@
   <script type="module">
     import { registerUser } from './js/auth.js';
     import { auth, onAuthStateChanged } from './js/firebase-config.js';
-    import { validatePassword, checkRateLimit } from './js/ui.js';
+    import { validatePassword, checkRateLimit, initCookieConsent } from './js/ui.js';
+    initCookieConsent();
 
     let isRegistering = false;
 
