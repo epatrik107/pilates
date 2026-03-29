@@ -64,10 +64,6 @@
           <div class="col-sm-6">
             <select id="filter-type" class="form-select">
               <option value="all">Foglalkozások kiválasztása</option>
-              <option value="mat">Mat Pilates</option>
-              <option value="reformer">Reformer Pilates</option>
-              <option value="tower">Tower Pilates</option>
-              <option value="prenatal">Kismama Pilates</option>
             </select>
           </div>
         </div>
@@ -106,7 +102,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { auth, onAuthStateChanged, googleCalendarConfig } from './js/firebase-config.js';
-    import { getUpcomingClasses } from './js/classes.js';
+    import { getUpcomingClasses, getClassTypes } from './js/classes.js';
     import { bookClass, getUserBookingForClass, cancelBooking, saveCalendarEventId } from './js/bookings.js';
     import { initNavbar, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
     import { generateGoogleCalendarUrl, initGoogleCalendarAPI, isGoogleCalendarAPIConfigured, addEventToGoogleCalendar } from './js/google-calendar.js';
@@ -123,7 +119,7 @@
     const filterInstructor = document.getElementById('filter-instructor');
     const dayCheckboxes    = document.querySelectorAll('.day-filter');
 
-    let allClasses = [], currentUser = null;
+    let allClasses = [], currentUser = null, classTypes = [];
 
     onAuthStateChanged(auth, (user) => { currentUser = user; loadClasses(); });
     filterType.addEventListener('change', renderClasses);
@@ -133,12 +129,22 @@
     async function loadClasses() {
       showLoading(container);
       try {
-        allClasses = await getUpcomingClasses();
+        [allClasses, classTypes] = await Promise.all([getUpcomingClasses(), getClassTypes()]);
         populateInstructorFilter();
+        populateTypeFilter();
         renderClasses();
       } catch (err) {
         container.innerHTML = `<div class="text-center py-5 text-danger"><p class="fw-medium">Hiba az órák betöltése során</p><p class="small">${escapeHtml(err.message)}</p></div>`;
       }
+    }
+
+    function populateTypeFilter() {
+      const current = filterType.value;
+      filterType.innerHTML = '<option value="all">Foglalkozások kiválasztása</option>';
+      classTypes.forEach(t => {
+        filterType.innerHTML += `<option value="${escapeHtml(t.value)}">${escapeHtml(t.label)}</option>`;
+      });
+      filterType.value = current;
     }
 
     function populateInstructorFilter() {
@@ -156,7 +162,8 @@
     function getDayOfWeek(d) { return new Date(d+'T00:00:00').getDay(); }
 
     function getTypeName(t) {
-      return {mat:'Mat Pilates',reformer:'Reformer Pilates',tower:'Tower Pilates',prenatal:'Kismama Pilates'}[t] || escapeHtml(t) || 'Pilates';
+      const found = classTypes.find(ct => ct.value === t);
+      return found ? escapeHtml(found.label) : (escapeHtml(t) || 'Pilates');
     }
 
     async function renderClasses() {

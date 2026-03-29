@@ -1,10 +1,34 @@
 import {
-  collection, doc, addDoc, updateDoc, deleteDoc,
+  collection, doc, addDoc, updateDoc, deleteDoc, setDoc,
   getDocs, getDoc, query, where, orderBy, serverTimestamp, increment
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 import { db } from './firebase-config.js';
 
 const classesRef = collection(db, 'classes');
+
+// ── Default class types (used when Firestore doc doesn't exist yet) ──
+const DEFAULT_CLASS_TYPES = [
+  { value: 'mat',      label: 'Mat Pilates', bgColor: '#e6edde', textColor: '#425634' },
+  { value: 'reformer', label: 'Reformer',    bgColor: '#ede9fe', textColor: '#6d28d9' },
+  { value: 'tower',    label: 'Tower',       bgColor: '#fef3c7', textColor: '#b45309' },
+  { value: 'prenatal', label: 'Kismama',     bgColor: '#fce7f3', textColor: '#be185d' },
+];
+
+// ── Get class types from Firestore ───────────────────────────
+export async function getClassTypes() {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'classTypes'));
+    if (snap.exists() && snap.data().types?.length) return snap.data().types;
+  } catch (err) {
+    console.warn('getClassTypes error:', err.message);
+  }
+  return DEFAULT_CLASS_TYPES;
+}
+
+// ── Save class types to Firestore (admin) ────────────────────
+export async function saveClassTypes(types) {
+  await setDoc(doc(db, 'settings', 'classTypes'), { types });
+}
 
 // ── Create class (admin) ────────────────────────────────────
 export async function createClass(data) {
