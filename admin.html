@@ -69,6 +69,9 @@
         <button class="nav-link active btn-sage-outline px-3 py-2 small fw-medium" data-tab="classes-tab">Órák</button>
       </li>
       <li class="nav-item">
+        <button class="nav-link btn-sage-outline px-3 py-2 small fw-medium" data-tab="calendar-tab">Naptár</button>
+      </li>
+      <li class="nav-item">
         <button class="nav-link btn-sage-outline px-3 py-2 small fw-medium" data-tab="stats-tab">Statisztika</button>
       </li>
     </ul>
@@ -195,6 +198,32 @@
     </div>
 
     </div><!-- /classes-tab -->
+
+    <!-- ═══ CALENDAR TAB ═══ -->
+    <div id="calendar-tab" class="hidden">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="btn-group">
+          <button type="button" id="cal-prev" class="btn btn-sm btn-sage-outline">&laquo; Előző</button>
+          <button type="button" id="cal-today" class="btn btn-sm btn-sage">Ma</button>
+          <button type="button" id="cal-next" class="btn btn-sm btn-sage-outline">Következő &raquo;</button>
+        </div>
+        <h2 id="cal-week-label" class="h6 font-display fw-semibold mb-0" style="color:var(--sage-700)"></h2>
+      </div>
+
+      <div class="admin-calendar-wrap">
+        <div class="admin-calendar">
+          <div class="cal-header cal-time-col"></div>
+          <div class="cal-header" id="cal-h0"></div>
+          <div class="cal-header" id="cal-h1"></div>
+          <div class="cal-header" id="cal-h2"></div>
+          <div class="cal-header" id="cal-h3"></div>
+          <div class="cal-header" id="cal-h4"></div>
+          <div class="cal-header" id="cal-h5"></div>
+          <div class="cal-header" id="cal-h6"></div>
+          <div id="cal-grid-body" class="cal-grid-body"></div>
+        </div>
+      </div>
+    </div><!-- /calendar-tab -->
 
     <!-- ═══ STATS TAB ═══ -->
     <div id="stats-tab" class="hidden">
@@ -421,6 +450,7 @@
     let adminUser    = null;
     let adminProfile = null;
     let classTypes   = [];
+    let calClassesCache = null;
 
     requireAdmin(async (user, profile) => {
       adminUser    = user;
@@ -544,6 +574,7 @@
     // ── Load classes ─────────────────────────────────────
     async function loadAdminClasses() {
       showLoading(classesContainer);
+      calClassesCache = null;
       try {
         const classes = await getAllClasses();
         renderAdminClasses(classes);
@@ -1070,6 +1101,7 @@
     });
 
     // ── Tab switching ──────────────────────────────────────
+    const allTabIds = ['classes-tab', 'calendar-tab', 'stats-tab'];
     document.querySelectorAll('#admin-tabs .nav-link').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#admin-tabs .nav-link').forEach(b => {
@@ -1080,12 +1112,122 @@
         btn.classList.remove('btn-sage-outline');
 
         const target = btn.dataset.tab;
-        document.getElementById('classes-tab').classList.toggle('hidden', target !== 'classes-tab');
-        document.getElementById('stats-tab').classList.toggle('hidden', target !== 'stats-tab');
+        allTabIds.forEach(id => document.getElementById(id).classList.toggle('hidden', id !== target));
 
         if (target === 'stats-tab') loadStats('week');
+        if (target === 'calendar-tab') renderCalendar();
       });
     });
+
+    // ── Calendar ────────────────────────────────────────────
+    const CAL_START_HOUR = 6;
+    const CAL_END_HOUR   = 22;
+    const DAY_NAMES_SHORT = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
+    const DAY_NAMES_FULL  = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'];
+
+    let calWeekMonday = getCalMonday(new Date());
+
+    function getCalMonday(d) {
+      const dt = new Date(d);
+      const day = dt.getDay();
+      const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
+      dt.setDate(diff);
+      dt.setHours(0, 0, 0, 0);
+      return dt;
+    }
+
+    function calDateStr(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    document.getElementById('cal-prev').addEventListener('click', () => {
+      calWeekMonday.setDate(calWeekMonday.getDate() - 7);
+      renderCalendar();
+    });
+    document.getElementById('cal-next').addEventListener('click', () => {
+      calWeekMonday.setDate(calWeekMonday.getDate() + 7);
+      renderCalendar();
+    });
+    document.getElementById('cal-today').addEventListener('click', () => {
+      calWeekMonday = getCalMonday(new Date());
+      renderCalendar();
+    });
+
+    async function renderCalendar() {
+      if (!calClassesCache) {
+        calClassesCache = await getAllClasses();
+      }
+
+      const todayStr = calDateStr(new Date());
+      const weekDates = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(calWeekMonday);
+        d.setDate(d.getDate() + i);
+        weekDates.push(d);
+      }
+
+      const mon = weekDates[0];
+      const sun = weekDates[6];
+      const opts = { month: 'short', day: 'numeric' };
+      document.getElementById('cal-week-label').textContent =
+        `${mon.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' })} – ${sun.toLocaleDateString('hu-HU', opts)}`;
+
+      for (let i = 0; i < 7; i++) {
+        const ds = calDateStr(weekDates[i]);
+        const hdr = document.getElementById(`cal-h${i}`);
+        const dayNum = weekDates[i].getDate();
+        hdr.innerHTML = `${DAY_NAMES_SHORT[i]}<br>${dayNum}.`;
+        hdr.classList.toggle('cal-today-col', ds === todayStr);
+      }
+
+      const weekDateStrs = weekDates.map(calDateStr);
+      const weekClasses = calClassesCache.filter(c => weekDateStrs.includes(c.date));
+
+      const totalRows = CAL_END_HOUR - CAL_START_HOUR;
+      const gridBody = document.getElementById('cal-grid-body');
+      let html = '';
+
+      for (let h = CAL_START_HOUR; h < CAL_END_HOUR; h++) {
+        html += `<div class="cal-time-label" style="grid-row:${h - CAL_START_HOUR + 1}">${String(h).padStart(2, '0')}:00</div>`;
+        for (let d = 0; d < 7; d++) {
+          const isToday = weekDateStrs[d] === todayStr;
+          html += `<div class="cal-row-cell${isToday ? ' cal-today-col' : ''}" data-day="${d}" data-hour="${h}" style="grid-row:${h - CAL_START_HOUR + 1};grid-column:${d + 2}"></div>`;
+        }
+      }
+
+      gridBody.innerHTML = html;
+      gridBody.style.gridTemplateRows = `repeat(${totalRows}, 3rem)`;
+
+      for (const cls of weekClasses) {
+        const dayIdx = weekDateStrs.indexOf(cls.date);
+        if (dayIdx === -1) continue;
+
+        const [hh, mm] = (cls.startTime || '0:0').split(':').map(Number);
+        const startMin = hh * 60 + mm;
+        const duration = cls.duration || 60;
+
+        const rowHour = Math.floor(startMin / 60);
+        if (rowHour < CAL_START_HOUR || rowHour >= CAL_END_HOUR) continue;
+
+        const topPx = ((startMin - CAL_START_HOUR * 60) / 60) * 48;
+        const heightPx = Math.max((duration / 60) * 48, 20);
+
+        const typeObj = classTypes.find(t => t.value === cls.type);
+        const bg = typeObj?.bgColor || '#e6edde';
+        const fg = typeObj?.textColor || '#425634';
+
+        const eventEl = document.createElement('div');
+        eventEl.className = 'cal-event';
+        eventEl.style.cssText = `top:${topPx - (rowHour - CAL_START_HOUR) * 48}px;height:${heightPx}px;background:${bg};color:${fg}`;
+        eventEl.innerHTML = `
+          <div class="cal-event-title">${escapeHtml(cls.title)}</div>
+          <div class="cal-event-info">${cls.startTime} · ${cls.currentBookings || 0}/${cls.maxCapacity}</div>`;
+        eventEl.addEventListener('click', () => showParticipants(cls));
+
+        const cell = gridBody.querySelector(`.cal-row-cell[data-day="${dayIdx}"][data-hour="${rowHour}"]`);
+        if (cell) cell.appendChild(eventEl);
+      }
+    }
 
     // ── Statistics ───────────────────────────────────────────
     let allBookingsCache = null;
