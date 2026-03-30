@@ -231,6 +231,8 @@ a.text-sage:hover { color: var(--sage-700); }
   position: relative;
 }
 .cal-row-cell.cal-today-col { background: var(--sage-50); }
+.cal-row-cell { cursor: pointer; transition: background 0.15s; }
+.cal-row-cell:hover { background: var(--sage-100); }
 .cal-event {
   position: absolute; left: 1px; right: 1px;
   border-radius: 0.25rem; padding: 1px 3px;

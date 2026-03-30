@@ -343,8 +343,8 @@
   </div>
 
   <!-- ═══ CLASS CREATE/EDIT MODAL ═══ -->
-  <div id="class-modal" class="modal-backdrop-custom p-3 hidden">
-    <div class="bg-white rounded-3 shadow-lg w-100 p-4" style="max-width:32rem;max-height:90vh;overflow-y:auto">
+  <div id="class-modal" class="modal-backdrop-custom p-2 p-sm-3 hidden">
+    <div class="bg-white rounded-3 shadow-lg w-100 p-3 p-sm-4" style="max-width:32rem;max-height:92vh;overflow-y:auto">
       <div class="d-flex align-items-center justify-content-between mb-4">
         <h2 id="modal-title" class="h5 font-display fw-semibold mb-0" style="color:var(--sage-800)">Új óra meghirdetése</h2>
         <button type="button" id="close-modal" class="btn btn-link text-muted p-1 border-0">
@@ -489,7 +489,7 @@
     modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
     participantsModal.addEventListener('click', (e) => { if (e.target === participantsModal) participantsModal.classList.add('hidden'); });
 
-    function openModal(classData = null) {
+    function openModal(classData = null, prefill = null) {
       editClassId.value = '';
       classForm.reset();
       recurringCheck.checked = false;
@@ -510,6 +510,10 @@
       } else {
         modalTitle.textContent = 'Új óra meghirdetése';
         recurringSection.classList.remove('hidden');
+        if (prefill) {
+          if (prefill.date) document.getElementById('class-date').value = prefill.date;
+          if (prefill.time) document.getElementById('class-time').value = prefill.time;
+        }
       }
 
       modal.classList.remove('hidden');
@@ -1231,6 +1235,17 @@
         const cell = gridBody.querySelector(`.cal-row-cell[data-day="${dayIdx}"][data-hour="${rowHour}"]`);
         if (cell) cell.appendChild(eventEl);
       }
+
+      gridBody.querySelectorAll('.cal-row-cell').forEach(cell => {
+        cell.addEventListener('click', (e) => {
+          if (e.target.closest('.cal-event')) return;
+          const dayIdx = parseInt(cell.dataset.day);
+          const hour   = parseInt(cell.dataset.hour);
+          const date   = weekDateStrs[dayIdx];
+          const time   = `${String(hour).padStart(2, '0')}:00`;
+          openModal(null, { date, time });
+        });
+      });
     }
 
     // ── Statistics ───────────────────────────────────────────
