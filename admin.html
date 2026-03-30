@@ -420,10 +420,10 @@
   </div>
 
   <!-- ═══ PARTICIPANTS MODAL ═══ -->
-  <div id="participants-modal" class="modal-backdrop-custom p-3 hidden">
-    <div class="bg-white rounded-3 shadow-lg w-100 p-4" style="max-width:28rem;max-height:80vh;overflow-y:auto">
-      <div class="d-flex align-items-center justify-content-between mb-4">
-        <h2 id="participants-title" class="h5 font-display fw-semibold mb-0" style="color:var(--sage-800)">Résztvevők</h2>
+  <div id="participants-modal" class="modal-backdrop-custom p-2 p-sm-3 hidden">
+    <div class="participants-modal-inner bg-white rounded-3 shadow-lg w-100 p-3 p-sm-4">
+      <div class="d-flex align-items-center justify-content-between mb-3 mb-sm-4">
+        <h2 id="participants-title" class="h6 h5-sm font-display fw-semibold mb-0" style="color:var(--sage-800)">Résztvevők</h2>
         <button type="button" id="close-participants" class="btn btn-link text-muted p-1 border-0">
           <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -790,15 +790,15 @@
         bookings.forEach((b, i) => {
           const bgClass = b.attended === true ? 'bg-success bg-opacity-10' : b.attended === false ? 'bg-danger bg-opacity-10' : 'bg-light';
           html += `
-            <li class="d-flex align-items-center gap-3 p-3 ${bgClass} rounded-3 mb-2">
-              <div class="rounded-circle bg-sage-light text-sage flex-shrink-0 d-flex align-items-center justify-content-center fw-bold small" style="width:2rem;height:2rem">
+            <li class="d-flex align-items-center flex-wrap gap-2 p-2 p-sm-3 ${bgClass} rounded-3 mb-2">
+              <div class="rounded-circle bg-sage-light text-sage flex-shrink-0 d-flex align-items-center justify-content-center fw-bold small" style="width:1.75rem;height:1.75rem;font-size:.75rem">
                 ${i + 1}
               </div>
               <div class="min-w-0 flex-grow-1">
-                <p class="fw-medium text-dark small mb-0">${escapeHtml(b.userName)}</p>
-                <p class="small text-muted mb-0">${escapeHtml(b.userEmail)}</p>
+                <p class="fw-medium text-dark small mb-0 text-truncate">${escapeHtml(b.userName)}</p>
+                <p class="small text-muted mb-0 text-truncate">${escapeHtml(b.userEmail)}</p>
               </div>
-              <div class="d-flex gap-1 flex-shrink-0">
+              <div class="d-flex gap-1 flex-shrink-0 ms-auto participant-actions">
                 <button class="attend-btn btn btn-sm ${b.attended === true ? 'btn-success' : 'btn-outline-success'} p-1" data-bid="${b.id}" data-val="true" title="Megjelent">
                   <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                 </button>

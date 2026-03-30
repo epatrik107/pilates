@@ -236,11 +236,20 @@
           if (currentUser) {
             if (userBooking) {
               const classStart = new Date(`${cls.date}T${cls.startTime || '00:00'}`);
-              const hoursUntil = (classStart - new Date()) / 3600000;
-              const canCancel  = hoursUntil > 24;
-              actionBtn = canCancel
-                ? `<button class="btn btn-sm btn-outline-secondary cancel-btn" data-booking-id="${userBooking.id}" data-class-id="${cls.id}">Lemondás</button>`
-                : `<button class="btn btn-sm btn-outline-secondary" disabled title="Lemondás már nem lehetséges (24 órán belül)">Foglalva</button>`;
+              const now = new Date();
+              const hoursUntil = (classStart - now) / 3600000;
+              const bookedAtMs = userBooking.bookedAt?.toDate ? userBooking.bookedAt.toDate().getTime() : 0;
+              const minsSinceBooking = (now.getTime() - bookedAtMs) / 60000;
+              const graceWindow = bookedAtMs > 0 && minsSinceBooking < 5;
+              const canCancel = hoursUntil > 24 || graceWindow;
+              if (canCancel && graceWindow && hoursUntil <= 24) {
+                const minsLeft = Math.max(0, Math.ceil(5 - minsSinceBooking));
+                actionBtn = `<button class="btn btn-sm btn-outline-secondary cancel-btn" data-booking-id="${userBooking.id}" data-class-id="${cls.id}">Lemondás (${minsLeft} perc)</button>`;
+              } else if (canCancel) {
+                actionBtn = `<button class="btn btn-sm btn-outline-secondary cancel-btn" data-booking-id="${userBooking.id}" data-class-id="${cls.id}">Lemondás</button>`;
+              } else {
+                actionBtn = `<button class="btn btn-sm btn-outline-secondary" disabled title="Lemondás már nem lehetséges (24 órán belül)">Foglalva</button>`;
+              }
             } else if (isFull && waitlistEntry) {
               actionBtn = `<button class="btn btn-sm btn-outline-warning waitlist-leave-btn" data-waitlist-id="${waitlistEntry.id}">Várólistán vagy</button>`;
             } else if (isFull) {
