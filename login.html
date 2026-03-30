@@ -52,6 +52,11 @@
             </div>
           </div>
 
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="remember-me" checked />
+            <label class="form-check-label small" for="remember-me" style="color:var(--sage-500)">Maradjak bejelentkezve</label>
+          </div>
+
           <button type="submit" id="login-btn" class="btn btn-sage w-100">
             Bejelentkezés
           </button>
@@ -105,6 +110,7 @@
   <script type="module">
     import { loginUser, resetPassword, signInWithGoogle, resendVerificationEmail, logoutUser } from './js/auth.js';
     import { auth, onAuthStateChanged } from './js/firebase-config.js';
+    import { setPersistence, browserLocalPersistence, browserSessionPersistence } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
     import { checkRateLimit, initCookieConsent } from './js/ui.js';
     initCookieConsent();
 
@@ -146,6 +152,9 @@
       btn.textContent = 'Bejelentkezés...';
 
       try {
+        const remember = document.getElementById('remember-me').checked;
+        await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
+
         const email    = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const user = await loginUser(email, password);
@@ -262,6 +271,8 @@
       errorMsg.classList.add('d-none');
       verifyPanel.classList.add('d-none');
       try {
+        const remember = document.getElementById('remember-me').checked;
+        await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
         const user = await signInWithGoogle();
         if (!user.emailVerified) {
           showUnverifiedError();

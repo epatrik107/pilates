@@ -1,4 +1,4 @@
-const CACHE_NAME = 'balance-v13';
+const CACHE_NAME = 'balance-v14';
 const STATIC_ASSETS = [
   'index.html',
   'about.html',
