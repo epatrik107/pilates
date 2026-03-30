@@ -1188,15 +1188,19 @@
       let html = '';
 
       for (let h = CAL_START_HOUR; h < CAL_END_HOUR; h++) {
-        html += `<div class="cal-time-label" style="grid-row:${h - CAL_START_HOUR + 1}">${String(h).padStart(2, '0')}:00</div>`;
+        const row = h - CAL_START_HOUR + 1;
+        html += `<div class="cal-time-label" style="grid-row:${row}">${h}:00</div>`;
         for (let d = 0; d < 7; d++) {
           const isToday = weekDateStrs[d] === todayStr;
-          html += `<div class="cal-row-cell${isToday ? ' cal-today-col' : ''}" data-day="${d}" data-hour="${h}" style="grid-row:${h - CAL_START_HOUR + 1};grid-column:${d + 2}"></div>`;
+          html += `<div class="cal-row-cell${isToday ? ' cal-today-col' : ''}" data-day="${d}" data-hour="${h}" style="grid-row:${row};grid-column:${d + 2}"></div>`;
         }
       }
 
       gridBody.innerHTML = html;
-      gridBody.style.gridTemplateRows = `repeat(${totalRows}, 3rem)`;
+      gridBody.style.gridTemplateRows = `repeat(${totalRows}, var(--cal-row-h))`;
+
+      const wrap = document.querySelector('.admin-calendar-wrap');
+      const rowH = parseFloat(getComputedStyle(wrap).getPropertyValue('--cal-row-h'));
 
       for (const cls of weekClasses) {
         const dayIdx = weekDateStrs.indexOf(cls.date);
@@ -1209,8 +1213,8 @@
         const rowHour = Math.floor(startMin / 60);
         if (rowHour < CAL_START_HOUR || rowHour >= CAL_END_HOUR) continue;
 
-        const topPx = ((startMin - CAL_START_HOUR * 60) / 60) * 48;
-        const heightPx = Math.max((duration / 60) * 48, 20);
+        const topPx = ((startMin - CAL_START_HOUR * 60) / 60) * rowH;
+        const heightPx = Math.max((duration / 60) * rowH, 16);
 
         const typeObj = classTypes.find(t => t.value === cls.type);
         const bg = typeObj?.bgColor || '#e6edde';
@@ -1218,7 +1222,7 @@
 
         const eventEl = document.createElement('div');
         eventEl.className = 'cal-event';
-        eventEl.style.cssText = `top:${topPx - (rowHour - CAL_START_HOUR) * 48}px;height:${heightPx}px;background:${bg};color:${fg}`;
+        eventEl.style.cssText = `top:${topPx - (rowHour - CAL_START_HOUR) * rowH}px;height:${heightPx}px;background:${bg};color:${fg}`;
         eventEl.innerHTML = `
           <div class="cal-event-title">${escapeHtml(cls.title)}</div>
           <div class="cal-event-info">${cls.startTime} · ${cls.currentBookings || 0}/${cls.maxCapacity}</div>`;

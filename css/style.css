@@ -182,48 +182,47 @@ a.text-sage:hover { color: var(--sage-700); }
 #admin-tabs .nav-link.active { background: var(--sage-600) !important; color: #fff !important; border-color: var(--sage-600) !important; }
 
 /* ── Admin calendar ─────────────────────────────────────── */
-.admin-calendar-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.admin-calendar-wrap { --cal-row-h: 48px; --cal-time-w: 2.8rem; }
 .admin-calendar {
   display: grid;
-  grid-template-columns: 3rem repeat(7, 1fr);
-  min-width: 700px;
+  grid-template-columns: var(--cal-time-w) repeat(7, 1fr);
   border: 1px solid var(--sage-200);
   border-radius: 0.5rem;
   overflow: hidden;
 }
 .cal-header {
   background: var(--sage-600); color: #fff;
-  font-size: 0.75rem; font-weight: 600;
-  text-align: center; padding: 0.5rem 0.25rem;
-  line-height: 1.3;
+  font-size: 0.7rem; font-weight: 600;
+  text-align: center; padding: 0.4rem 0.15rem;
+  line-height: 1.25;
 }
 .cal-header.cal-today-col { background: var(--sage-700); }
 .cal-time-col { background: var(--sage-50) !important; color: var(--sage-500); }
 .cal-grid-body {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 3rem repeat(7, 1fr);
+  grid-template-columns: var(--cal-time-w) repeat(7, 1fr);
 }
 .cal-time-label {
   grid-column: 1;
-  font-size: 0.65rem; color: var(--sage-400);
-  text-align: right; padding: 0 0.25rem;
+  font-size: 0.6rem; color: var(--sage-400);
+  text-align: right; padding: 0 0.2rem;
   border-top: 1px solid #f0f0f0;
-  height: 3rem;
+  height: var(--cal-row-h);
   display: flex; align-items: flex-start; justify-content: flex-end;
   transform: translateY(-0.4em);
 }
 .cal-row-cell {
   border-top: 1px solid #f0f0f0;
   border-left: 1px solid #f5f5f5;
-  min-height: 3rem;
+  min-height: var(--cal-row-h);
   position: relative;
 }
 .cal-row-cell.cal-today-col { background: var(--sage-50); }
 .cal-event {
-  position: absolute; left: 2px; right: 2px;
-  border-radius: 0.3rem; padding: 2px 4px;
-  font-size: 0.65rem; line-height: 1.2;
+  position: absolute; left: 1px; right: 1px;
+  border-radius: 0.25rem; padding: 1px 3px;
+  font-size: 0.6rem; line-height: 1.15;
   overflow: hidden; cursor: pointer;
   border-left: 3px solid rgba(0,0,0,0.15);
   transition: opacity 0.15s, box-shadow 0.15s;
@@ -232,6 +231,21 @@ a.text-sage:hover { color: var(--sage-700); }
 .cal-event:hover { opacity: 0.85; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 .cal-event-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cal-event-info { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.8; }
+
+@media (min-width: 768px) {
+  .admin-calendar-wrap { --cal-row-h: 48px; --cal-time-w: 3rem; }
+  .cal-header { font-size: 0.75rem; padding: 0.5rem 0.25rem; }
+  .cal-time-label { font-size: 0.65rem; }
+  .cal-event { left: 2px; right: 2px; padding: 2px 4px; font-size: 0.65rem; }
+}
+
+@media (max-width: 575.98px) {
+  .admin-calendar-wrap { --cal-row-h: 32px; --cal-time-w: 1.8rem; }
+  .cal-header { font-size: 0.55rem; padding: 0.25rem 0.1rem; line-height: 1.2; }
+  .cal-time-label { font-size: 0.5rem; padding: 0 0.1rem; }
+  .cal-event { font-size: 0.5rem; padding: 1px 2px; border-left-width: 2px; }
+  .cal-event-info { display: none; }
+}
 
 /* ── Misc helpers ────────────────────────────────────────── */
 .hidden { display: none !important; }
