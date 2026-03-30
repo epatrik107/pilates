@@ -120,12 +120,32 @@ h1, h2, h3, .font-display { font-family: 'Playfair Display', Georgia, serif; }
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
   z-index: 1050; display: flex; align-items: center; justify-content: center;
+  padding: env(safe-area-inset-top, 0.5rem) env(safe-area-inset-right, 0.5rem)
+           env(safe-area-inset-bottom, 0.5rem) env(safe-area-inset-left, 0.5rem);
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+.modal-inner-safe {
+  max-height: 85dvh;
+  max-height: 85vh; /* fallback */
+  overflow-y: auto;
+}
+@supports (max-height: 1dvh) {
+  .modal-inner-safe { max-height: 85dvh; }
 }
 .participants-modal-inner {
-  max-width: 28rem; max-height: 85vh; overflow-y: auto;
+  max-width: 28rem;
 }
 @media (max-width: 575.98px) {
-  .participants-modal-inner { max-width: 100%; max-height: 92vh; border-radius: 0.75rem !important; }
+  .modal-inner-safe {
+    max-height: 80dvh;
+    max-height: 80vh;
+    border-radius: 0.75rem !important;
+  }
+  @supports (max-height: 1dvh) {
+    .modal-inner-safe { max-height: 80dvh; }
+  }
+  .participants-modal-inner { max-width: 100%; }
   .participants-modal-inner .list-unstyled li {
     flex-wrap: wrap; gap: 0.4rem !important; padding: 0.5rem !important;
   }
