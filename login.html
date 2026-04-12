@@ -111,7 +111,7 @@
     import { loginUser, resetPassword, signInWithGoogle, resendVerificationEmail, logoutUser } from './js/auth.js';
     import { auth, onAuthStateChanged } from './js/firebase-config.js';
     import { setPersistence, browserLocalPersistence, browserSessionPersistence, applyActionCode, confirmPasswordReset } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
-    import { checkRateLimit, initCookieConsent } from './js/ui.js';
+    import { checkRateLimit, initCookieConsent, validatePassword } from './js/ui.js';
     initCookieConsent();
 
     // ── Handle Firebase email action links (verifyEmail, resetPassword) ──
@@ -128,7 +128,16 @@
         <p class="fw-semibold mb-3" style="color:var(--sage-700)">Új jelszó megadása</p>
         <div class="mb-3">
           <label class="form-label">Új jelszó</label>
-          <input type="password" id="new-pw" class="form-control" placeholder="legalább 6 karakter" minlength="6" required />
+          <input type="password" id="new-pw" class="form-control" placeholder="legalább 8 karakter" minlength="8" required />
+          <div id="pw-strength" class="mt-2 hidden">
+            <div class="d-flex gap-1 mb-1" role="presentation">
+              <div class="flex-fill rounded-pill bg-body-secondary" style="height:6px" id="pw-bar-1"></div>
+              <div class="flex-fill rounded-pill bg-body-secondary" style="height:6px" id="pw-bar-2"></div>
+              <div class="flex-fill rounded-pill bg-body-secondary" style="height:6px" id="pw-bar-3"></div>
+              <div class="flex-fill rounded-pill bg-body-secondary" style="height:6px" id="pw-bar-4"></div>
+            </div>
+            <ul id="pw-checks" class="list-unstyled mb-0 small"></ul>
+          </div>
         </div>
         <div class="mb-3">
           <label class="form-label">Jelszó megerősítése</label>
@@ -138,12 +147,33 @@
         <p id="reset-pw-msg" class="small mt-2 mb-0 d-none"></p>
       `;
       document.getElementById('login-form').before(resetBox);
+
+      // ── Real-time password strength meter
+      document.getElementById('new-pw').addEventListener('input', () => {
+        const val = document.getElementById('new-pw').value;
+        const pwStrength = document.getElementById('pw-strength');
+        const pwChecks   = document.getElementById('pw-checks');
+        if (!val) { pwStrength.classList.add('hidden'); return; }
+        pwStrength.classList.remove('hidden');
+        const result = validatePassword(val);
+        const colors  = ['bg-danger', 'bg-warning', 'bg-warning', 'bg-success'];
+        const barColor = colors[Math.min(result.strength - 1, 3)] || 'bg-body-secondary';
+        for (let i = 1; i <= 4; i++) {
+          document.getElementById(`pw-bar-${i}`).className =
+            `flex-fill rounded-pill ${i <= result.strength ? barColor : 'bg-body-secondary'}`;
+        }
+        pwChecks.innerHTML = result.checks.map(c =>
+          `<li class="small ${c.ok ? 'text-success' : 'text-muted'}">${c.ok ? '&#10003;' : '&#10007;'} ${c.msg}</li>`
+        ).join('');
+      });
+
       document.getElementById('reset-pw-btn').addEventListener('click', async () => {
         const pw1 = document.getElementById('new-pw').value;
         const pw2 = document.getElementById('new-pw2').value;
         const msg = document.getElementById('reset-pw-msg');
-        if (pw1.length < 6) {
-          msg.textContent = 'A jelszónak legalább 6 karakter hosszúnak kell lennie.';
+        const pwResult = validatePassword(pw1);
+        if (!pwResult.valid) {
+          msg.textContent = 'A jelszó nem elég erős: ' + pwResult.errors.join(', ') + '.';
           msg.className = 'small mt-2 mb-0 text-danger';
           msg.classList.remove('d-none');
           return;
