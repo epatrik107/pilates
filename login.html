@@ -221,6 +221,7 @@
     }
 
     onAuthStateChanged(auth, (user) => {
+      if (mode === 'resetPassword' || mode === 'verifyEmail' || mode === 'recoverEmail') return;
       if (user && user.emailVerified) window.location.href = 'index.html';
     });
 
