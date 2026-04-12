@@ -110,9 +110,33 @@
   <script type="module">
     import { loginUser, resetPassword, signInWithGoogle, resendVerificationEmail, logoutUser } from './js/auth.js';
     import { auth, onAuthStateChanged } from './js/firebase-config.js';
-    import { setPersistence, browserLocalPersistence, browserSessionPersistence } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
+    import { setPersistence, browserLocalPersistence, browserSessionPersistence, applyActionCode } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
     import { checkRateLimit, initCookieConsent } from './js/ui.js';
     initCookieConsent();
+
+    // ── Handle Firebase email action links (verifyEmail, resetPassword) ──
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode    = urlParams.get('mode');
+    const oobCode = urlParams.get('oobCode');
+
+    if (mode === 'verifyEmail' && oobCode) {
+      const info = document.createElement('div');
+      info.className = 'alert small mb-3 text-center';
+      info.textContent = 'Email cím megerősítése folyamatban...';
+      info.classList.add('alert-info');
+      document.getElementById('login-form').before(info);
+      applyActionCode(auth, oobCode)
+        .then(() => {
+          info.className = 'alert alert-success small mb-3 text-center';
+          info.innerHTML = '<strong>Email cím sikeresen megerősítve!</strong> Most már bejelentkezhetsz.';
+          history.replaceState(null, '', 'login.html');
+        })
+        .catch(() => {
+          info.className = 'alert alert-danger small mb-3 text-center';
+          info.innerHTML = 'A megerősítő link érvénytelen vagy lejárt. Kérj új megerősítő emailt bejelentkezés után.';
+          history.replaceState(null, '', 'login.html');
+        });
+    }
 
     const verifiedParam = new URLSearchParams(window.location.search).get('verified');
     if (verifiedParam === 'pending') {

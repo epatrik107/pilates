@@ -60,6 +60,12 @@ export async function ensureUserProfile(user) {
   }
 }
 
+// ── Action code settings (links point to our domain, not firebaseapp.com) ───
+const actionCodeSettings = {
+  url: 'https://balance-studio.hu/login.html',
+  handleCodeInApp: false
+};
+
 // ── Registration ────────────────────────────────────────────
 export async function registerUser(name, email, password) {
   const cleanName = sanitizeName(name);
@@ -83,7 +89,7 @@ export async function registerUser(name, email, password) {
     createdAt: new Date().toISOString()
   }).catch(e => console.warn('Firestore profile write:', e));
 
-  sendEmailVerification(cred.user).catch(e => console.warn('Verification email:', e));
+  sendEmailVerification(cred.user, actionCodeSettings).catch(e => console.warn('Verification email:', e));
 
   return cred.user;
 }
@@ -93,12 +99,12 @@ export async function resendVerificationEmail() {
   const user = auth.currentUser;
   if (!user) throw new Error('Nincs bejelentkezve.');
   if (user.emailVerified) throw new Error('Az email cím már megerősítve.');
-  await sendEmailVerification(user);
+  await sendEmailVerification(user, actionCodeSettings);
 }
 
 // ── Password reset ──────────────────────────────────────────
 export async function resetPassword(email) {
-  await sendPasswordResetEmail(auth, email);
+  await sendPasswordResetEmail(auth, email, actionCodeSettings);
 }
 
 // ── Email change (sends verification to the new address) ────
