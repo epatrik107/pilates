@@ -2,23 +2,20 @@
    Balance Studio – Custom styles (Bootstrap supplement)
    ═══════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --sage-50:  #f4f7f0;
-  --sage-100: #e6edde;
-  --sage-200: #cddabd;
-  --sage-300: #a9bf93;
-  --sage-400: #87a46e;
-  --sage-500: #6b8a53;
-  --sage-600: #536d3f;
-  --sage-700: #425634;
-  --sage-800: #37462d;
-  --sage-900: #2f3b27;
-  --cream:    #faf8f4;
-  --motibro-blue:   #3ea3dc;
-  --motibro-green:  #5cb85c;
-  --motibro-orange: #f0ad4e;
+  --sage-50:  #fdf9f5;
+  --sage-100: #f5ece0;
+  --sage-200: #e8d5be;
+  --sage-300: #d4b896;
+  --sage-400: #b8916a;
+  --sage-500: #9a7251;
+  --sage-600: #7d5a3c;
+  --sage-700: #5e4229;
+  --sage-800: #3f2b17;
+  --sage-900: #2a1a0a;
+  --cream:    #fdf8f2;
   --bs-body-bg: var(--cream);
   --bs-body-font-family: 'Inter', system-ui, sans-serif;
 }
@@ -26,11 +23,11 @@
 * { scrollbar-width: thin; scrollbar-color: var(--sage-300) transparent; }
 
 body { background-color: var(--cream); font-family: 'Inter', system-ui, sans-serif; color: #2d3436; }
-h1, h2, h3, .font-display { font-family: 'Playfair Display', Georgia, serif; }
+h1, h2, h3, .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
 
 /* ── Navbar ──────────────────────────────────────────────── */
 .navbar { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); }
-.navbar-brand { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; color: var(--sage-700) !important; }
+.navbar-brand { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; color: var(--sage-700) !important; }
 .nav-link { color: #555 !important; font-weight: 500; font-size: 0.9rem; transition: color 0.2s; }
 .nav-link:hover, .nav-link.active { color: var(--sage-700) !important; }
 .nav-link.btn-sage { background: var(--sage-600); color: #fff !important; border-radius: 0.5rem; padding: 0.4rem 1rem !important; }
@@ -42,15 +39,12 @@ h1, h2, h3, .font-display { font-family: 'Playfair Display', Georgia, serif; }
 .btn-sage:disabled { opacity: 0.5; }
 .btn-sage-outline { border: 1px solid var(--sage-300); color: var(--sage-700); background: transparent; border-radius: 0.6rem; font-weight: 500; }
 .btn-sage-outline:hover { background: var(--sage-50); color: var(--sage-700); }
-.btn-motibro-green { background: var(--motibro-green); color: #fff; border: none; border-radius: 0.5rem; font-weight: 600; }
-.btn-motibro-green:hover { opacity: 0.9; color: #fff; }
-.btn-motibro-orange { background: var(--motibro-orange); color: #fff; border: none; border-radius: 0.5rem; font-weight: 600; }
-.btn-motibro-orange:hover { opacity: 0.9; color: #fff; }
+
 
 /* ── Form fields ─────────────────────────────────────────── */
 .form-control:focus, .form-select:focus {
   border-color: var(--sage-400);
-  box-shadow: 0 0 0 0.2rem rgba(107, 138, 83, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(125, 90, 60, 0.2);
 }
 
 /* ── Schedule table ──────────────────────────────────────── */
@@ -76,7 +70,7 @@ h1, h2, h3, .font-display { font-family: 'Playfair Display', Georgia, serif; }
   background: var(--sage-200);
   color: var(--sage-700);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Cormorant Garamond', Georgia, serif;
   font-weight: 700; font-size: 1.5rem;
 }
 .avatar-sm {
@@ -103,7 +97,7 @@ h1, h2, h3, .font-display { font-family: 'Playfair Display', Georgia, serif; }
 .badge-prenatal { background: #fce7f3; color: #be185d; }
 
 /* ── Hero gradient ───────────────────────────────────────── */
-.hero-gradient { background: linear-gradient(135deg, var(--sage-50) 0%, #e8ede3 50%, #f0ece6 100%); }
+.hero-gradient { background: linear-gradient(135deg, var(--sage-50) 0%, #f0e4d2 50%, var(--cream) 100%); }
 
 /* ── Toast ───────────────────────────────────────────────── */
 #toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
@@ -171,12 +165,12 @@ h1, h2, h3, .font-display { font-family: 'Playfair Display', Georgia, serif; }
 
 /* ── Auth pages (login, register) ────────────────────────── */
 .auth-page {
-  background: linear-gradient(160deg, var(--sage-50) 0%, #e8ede3 40%, var(--cream) 100%);
+  background: linear-gradient(160deg, var(--sage-50) 0%, #f0e4d2 40%, var(--cream) 100%);
   min-height: 100vh;
 }
 .auth-card {
   border: 1px solid var(--sage-200) !important;
-  box-shadow: 0 4px 24px rgba(107, 138, 83, 0.08);
+  box-shadow: 0 4px 24px rgba(125, 90, 60, 0.1);
 }
 .auth-card .form-label { color: var(--sage-700); font-weight: 500; font-size: 0.9rem; }
 .auth-logo { color: var(--sage-700); }
