@@ -67,7 +67,7 @@ const actionCodeSettings = {
 };
 
 // ── Registration ────────────────────────────────────────────
-export async function registerUser(name, email, password) {
+export async function registerUser(name, email, password, birthdayDate) {
   const cleanName = sanitizeName(name);
   if (cleanName.length < 1) {
     throw new Error('A név nem lehet üres!');
@@ -81,13 +81,19 @@ export async function registerUser(name, email, password) {
     console.warn('Profile update failed:', e);
   }
 
-  // Fire and forget — ensureUserProfile will retry on next page load
-  setDoc(doc(db, 'users', cred.user.uid), {
+  const [, bdMonth, bdDay] = (birthdayDate || '').split('-');
+  const profileData = {
     name: cleanName,
     email,
     role: 'user',
-    createdAt: new Date().toISOString()
-  }).catch(e => console.warn('Firestore profile write:', e));
+    createdAt:       new Date().toISOString(),
+    birthdayDate:    birthdayDate,
+    birthdayMonthDay: birthdayDate ? `${bdMonth}-${bdDay}` : null
+  };
+
+  // Fire and forget — ensureUserProfile will retry on next page load
+  setDoc(doc(db, 'users', cred.user.uid), profileData)
+    .catch(e => console.warn('Firestore profile write:', e));
 
   sendEmailVerification(cred.user, actionCodeSettings).catch(e => console.warn('Verification email:', e));
 
@@ -113,6 +119,17 @@ export async function changeEmail(newEmail) {
   if (!user) throw new Error('Nincs bejelentkezve.');
   await verifyBeforeUpdateEmail(user, newEmail);
   await updateDoc(doc(db, 'users', user.uid), { email: newEmail });
+}
+
+// ── Birthday save ────────────────────────────────────────────
+// birthdayDate: YYYY-MM-DD string
+// birthdayMonthDay: MM-DD string (used by Cloud Functions for daily query)
+export async function saveBirthday(uid, birthdayDate) {
+  const [, month, day] = birthdayDate.split('-');
+  await updateDoc(doc(db, 'users', uid), {
+    birthdayDate,
+    birthdayMonthDay: `${month}-${day}`
+  });
 }
 
 // ── Google Sign-In ──────────────────────────────────────────

@@ -23,6 +23,8 @@ Thumbs.db
 # Node (if you later add npm)
 node_modules/
 npm-debug.log*
+functions/node_modules/
+functions/.env
 
 # Firebase
 .firebase/

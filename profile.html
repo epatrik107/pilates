@@ -102,6 +102,29 @@
 
     <hr class="my-5 border-danger-subtle">
 
+    <!-- Birthday section -->
+    <div id="birthday-section" class="card border shadow-sm mb-4 hidden">
+      <div class="card-body p-4">
+        <h2 class="h5 font-display fw-semibold d-flex align-items-center gap-2 mb-1" style="color: var(--sage-800);">
+          <svg class="text-sage flex-shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+          </svg>
+          Születésnap
+        </h2>
+        <p class="small text-muted mb-3">Születésnapodon ajándék emailt küldünk 50% kedvezménnyel a következő Talaj Pilates órádra.</p>
+        <div class="d-flex gap-2 align-items-end" style="max-width:22rem">
+          <div class="flex-fill">
+            <label for="birthday-input" class="form-label small fw-medium">Születési dátum</label>
+            <input type="date" id="birthday-input" class="form-control form-control-sm" />
+          </div>
+          <button type="button" id="birthday-save-btn" class="btn btn-sm btn-sage flex-shrink-0">Mentés</button>
+        </div>
+        <p id="birthday-msg" class="small mt-2 mb-0 hidden"></p>
+      </div>
+    </div>
+
+    <hr class="my-4 border-danger-subtle">
+
     <div class="card border border-danger-subtle shadow-sm">
       <div class="card-body p-4">
         <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
@@ -162,7 +185,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { initNavbar, requireAuth, showToast, showConfirm, escapeHtml } from './js/ui.js';
-    import { getUserProfile, deleteAccount, reauthenticate, resendVerificationEmail, changeEmail, linkPasswordToAccount, resetPassword } from './js/auth.js';
+    import { getUserProfile, deleteAccount, reauthenticate, resendVerificationEmail, changeEmail, linkPasswordToAccount, resetPassword, saveBirthday } from './js/auth.js';
     import { auth as authInstance } from './js/firebase-config.js';
 
     initNavbar();
@@ -187,20 +210,74 @@
         roleEl.className   = 'badge bg-primary-subtle text-primary mt-1';
       }
 
+      // Birthday section: only for Google-only users who haven't set it yet
+      const birthdaySection = document.getElementById('birthday-section');
+      const providers = user.providerData.map(p => p.providerId);
+      const hasPassword = providers.includes('password');
+      const hasGoogle   = providers.includes('google.com');
+
+      if (hasPassword) {
+        // Email/jelszó regisztrált: a születésnap regisztrációkor lett megadva, nem módosítható
+        birthdaySection.classList.add('hidden');
+      } else if (hasGoogle) {
+        // Google user: megjelenítjük, de ha már be van állítva, zároljuk
+        birthdaySection.classList.remove('hidden');
+        if (profile?.birthdayDate) {
+          const input = document.getElementById('birthday-input');
+          input.value    = profile.birthdayDate;
+          input.disabled = true;
+          document.getElementById('birthday-save-btn').classList.add('hidden');
+          const msg = document.getElementById('birthday-msg');
+          msg.textContent = 'A születési dátum már be van állítva és nem módosítható.';
+          msg.className   = 'small mt-2 mb-0 text-muted';
+          msg.classList.remove('hidden');
+        }
+      }
+
       // Show verification banner if email not verified
       if (!user.emailVerified) {
         document.getElementById('verify-banner').classList.remove('hidden');
       }
-
-      const providers = user.providerData.map(p => p.providerId);
-      const hasPassword = providers.includes('password');
-      const hasGoogle   = providers.includes('google.com');
 
       if (hasGoogle && !hasPassword) {
         document.getElementById('set-password-section').classList.remove('hidden');
         document.getElementById('password-section').classList.add('hidden');
       }
 
+    });
+
+    // ── Birthday save (Google-only, one-time) ─────────────────────────────
+    document.getElementById('birthday-save-btn').addEventListener('click', async () => {
+      const input = document.getElementById('birthday-input');
+      const msg   = document.getElementById('birthday-msg');
+      const btn   = document.getElementById('birthday-save-btn');
+      const val   = input.value;
+      msg.classList.add('hidden');
+
+      if (!val) {
+        msg.textContent = 'Kérlek adj meg egy dátumot.';
+        msg.className = 'small mt-2 mb-0 text-danger';
+        msg.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Mentés...';
+      try {
+        const user = authInstance.currentUser;
+        await saveBirthday(user.uid, val);
+        input.disabled = true;
+        btn.classList.add('hidden');
+        msg.textContent = 'Születésnap elmentve! Többé nem módosítható.';
+        msg.className = 'small mt-2 mb-0 text-success';
+        msg.classList.remove('hidden');
+      } catch (err) {
+        msg.textContent = err.message || 'Hiba történt.';
+        msg.className = 'small mt-2 mb-0 text-danger';
+        msg.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Mentés';
+      }
     });
 
     // ── Resend verification email ─────────────────────────

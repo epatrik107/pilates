@@ -79,8 +79,12 @@
             </div>
           </div>
 
+          <div class="mb-3">
+            <label for="birthday" class="form-label">Születési dátum</label>
+            <input type="date" id="birthday" class="form-control" required />
+          </div>
+
           <div class="mb-4 form-check">
-            <input type="checkbox" class="form-check-input" id="gdpr" required>
             <label class="form-check-label small text-muted" for="gdpr">
               Elfogadom az <a href="terms.html" class="text-sage">ÁSZF</a>-et és az <a href="privacy.html" class="text-sage">Adatvédelmi tájékoztatót</a>.
             </label>
@@ -186,6 +190,7 @@
       const email     = document.getElementById('email').value.trim();
       const password  = pwInput.value;
       const password2 = document.getElementById('password2').value;
+      const birthday  = document.getElementById('birthday').value || null;
 
       // Password strength validation
       const pwResult = validatePassword(password);
@@ -206,7 +211,7 @@
       isRegistering = true;
 
       try {
-        await registerUser(name, email, password);
+        await registerUser(name, email, password, birthday);
         await logoutUser();
         window.location.href = 'login.html?verified=pending';
       } catch (err) {
