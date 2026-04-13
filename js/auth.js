@@ -15,7 +15,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
 import {
   doc, setDoc, getDoc, deleteDoc, updateDoc,
-  collection, query, where, getDocs, runTransaction
+  collection, query, where, orderBy, getDocs, runTransaction
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 
@@ -196,6 +196,12 @@ export async function isAdmin(uid) {
 export async function reauthenticate(user, password) {
   const credential = EmailAuthProvider.credential(user.email, password);
   await reauthenticateWithCredential(user, credential);
+}
+
+// ── Get all users (admin only) ──────────────────────────────
+export async function getAllUsers() {
+  const snap = await getDocs(query(collection(db, 'users'), orderBy('name')));
+  return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
 }
 
 // ── Delete account ──────────────────────────────────────────

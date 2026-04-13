@@ -7,6 +7,7 @@
   <title>Admin Dashboard – Balance Studio</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <script src="js/theme.js"></script>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#6b8a53" />
   <link rel="icon" href="img/logo.svg" type="image/svg+xml" />
@@ -130,6 +131,10 @@
             <div>
               <label class="form-label small mb-1">Szöveg</label>
               <input type="color" id="new-type-text" class="form-control form-control-sm form-control-color" value="#425634" style="width:3rem;height:31px" />
+            </div>
+            <div>
+              <label class="form-label small mb-1">Alap létszám</label>
+              <input type="number" id="new-type-capacity" class="form-control form-control-sm" value="10" min="1" max="50" style="width:5rem" />
             </div>
             <button type="submit" class="btn btn-sm btn-sage">Hozzáadás</button>
           </form>
@@ -437,11 +442,11 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { initNavbar, requireAdmin, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
-    import { createClass, updateClass, deleteClass, getAllClasses, getUpcomingClasses, getClassTypes, saveClassTypes, cloneWeekClasses, createRecurringClasses, saveInstructorPhoto, getInstructorPhoto, getPricing, savePricing } from './js/classes.js';
-    import { getBookingsForClass, setAttendance, getAllBookings, cancelBooking } from './js/bookings.js';
+    import { createClass, updateClass, deleteClass, getAllClasses, getUpcomingClasses, getClassTypes, saveClassTypes, cloneWeekClasses, createRecurringClasses, saveInstructorPhoto, getInstructorPhoto, getPricing, savePricing, restoreClass } from './js/classes.js';
+    import { getBookingsForClass, setAttendance, getAllBookings, cancelBooking, adminBookClass } from './js/bookings.js';
     import { getWaitlistForClass } from './js/waitlist.js';
     import { exportBookingsCSV, exportUsersCSV } from './js/export.js';
-    import { updateUserPhoto } from './js/auth.js';
+    import { updateUserPhoto, getAllUsers } from './js/auth.js';
 
     initNavbar();
 
@@ -449,6 +454,7 @@
     let adminProfile = null;
     let classTypes   = [];
     let calClassesCache = null;
+    let allUsersCache = null;
 
     requireAdmin(async (user, profile) => {
       adminUser    = user;
@@ -578,7 +584,7 @@
       showLoading(classesContainer);
       calClassesCache = null;
       try {
-        const classes = await getAllClasses();
+        const classes = await getAllClasses(true);
         renderAdminClasses(classes);
       } catch (err) {
         classesContainer.innerHTML = `
@@ -683,14 +689,26 @@
 
       classesContainer.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
-          const ok = await showConfirm('Biztosan törölni szeretnéd ezt az órát? A kapcsolódó foglalások is törlődnek.');
+          const ok = await showConfirm('Biztosan archiválni szeretnéd ezt az órát? Az órarend nyilvános nézetéből eltűnik, de a statisztikák megmaradnak.');
           if (!ok) return;
           try {
             await deleteClass(btn.dataset.id);
-            showToast('Óra sikeresen törölve.', 'info');
+            showToast('Óra sikeresen archiválva.', 'info');
             loadAdminClasses();
           } catch (err) {
-            showToast('Hiba a törlés során.', 'error');
+            showToast('Hiba az archiválás során.', 'error');
+          }
+        });
+      });
+
+      classesContainer.querySelectorAll('.restore-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          try {
+            await restoreClass(btn.dataset.id);
+            showToast('Óra sikeresen visszaállítva.', 'success');
+            loadAdminClasses();
+          } catch (err) {
+            showToast('Hiba a visszaállítás során.', 'error');
           }
         });
       });
@@ -714,10 +732,11 @@
       const typeObj = classTypes.find(t => t.value === cls.type);
 
       return `
-        <div class="schedule-row d-flex flex-column flex-sm-row align-items-sm-center gap-2 gap-sm-3 px-3">
+        <div class="schedule-row d-flex flex-column flex-sm-row align-items-sm-center gap-2 gap-sm-3 px-3${cls.archived ? ' opacity-50' : ''}">
           <div class="flex-grow-1 min-w-0">
             <div class="d-flex align-items-center gap-2 mb-1">
               <span class="badge" style="background:${typeObj?.bgColor || '#e5e7eb'};color:${typeObj?.textColor || '#374151'}">${typeObj?.label || escapeHtml(cls.type)}</span>
+              ${cls.archived ? '<span class="badge bg-secondary">Archiv\u00e1lt</span>' : ''}
               <span class="small text-muted">${escapeHtml(cls.location || '')}</span>
             </div>
             <h3 class="fw-semibold text-dark text-truncate h6 mb-0">${escapeHtml(cls.title)}</h3>
@@ -733,13 +752,19 @@
               </svg>
               ${cls.currentBookings || 0}/${cls.maxCapacity}
             </button>
-            ${!isPast ? `
+            ${cls.archived ? `
+              <button type="button" class="restore-btn btn btn-sm btn-link text-success p-1" data-id="${cls.id}" title="Visszaállítás">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"/>
+                </svg>
+              </button>
+            ` : !isPast ? `
               <button type="button" class="edit-btn btn btn-sm btn-link text-sage p-1" data-id="${cls.id}" title="Szerkesztés">
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                 </svg>
               </button>
-              <button type="button" class="delete-btn btn btn-sm btn-link text-danger p-1" data-id="${cls.id}" title="Törlés">
+              <button type="button" class="delete-btn btn btn-sm btn-link text-danger p-1" data-id="${cls.id}" title="Archiv\u00e1l\u00e1s">
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                 </svg>
@@ -777,15 +802,15 @@
       });
 
       document.getElementById('modal-delete-class').addEventListener('click', async () => {
-        const ok = await showConfirm(`Biztosan törlöd a(z) „${cls.title}" órát?`);
+        const ok = await showConfirm(`Biztosan archiválod a(z) „${cls.title}" órát?`);
         if (!ok) return;
         try {
           await deleteClass(cls.id);
-          showToast('Óra sikeresen törölve.', 'info');
+          showToast('Óra sikeresen archiválva.', 'info');
           participantsModal.classList.add('hidden');
           calClassesCache = null;
           loadAdminClasses();
-        } catch (err) { showToast('Hiba a törlés során: ' + err.message, 'error'); }
+        } catch (err) { showToast('Hiba az archiválás során: ' + err.message, 'error'); }
       });
 
       participantsModal.classList.remove('hidden');
@@ -861,6 +886,18 @@
           </div>`;
         }
 
+        // Admin manual booking form
+        if ((cls.currentBookings || 0) < cls.maxCapacity) {
+          html += `<div class="mt-3 pt-3 border-top">
+            <p class="small fw-semibold mb-2" style="color:var(--sage-700)">Résztvevő hozzáadása</p>
+            <div class="d-flex gap-2">
+              <input type="text" id="admin-book-search" list="admin-user-datalist" class="form-control form-control-sm" placeholder="Név vagy email keresése...">
+              <datalist id="admin-user-datalist"></datalist>
+              <button type="button" id="admin-book-btn" class="btn btn-sm btn-sage flex-shrink-0">Foglalás</button>
+            </div>
+          </div>`;
+        }
+
         participantsList.innerHTML = html;
 
         participantsList.querySelectorAll('.attend-btn').forEach(btn => {
@@ -887,6 +924,42 @@
             } catch (err) { showToast('Hiba az eltávolítás során: ' + err.message, 'error'); btn.disabled = false; }
           });
         });
+
+        // Admin manual booking: populate datalist and bind
+        if ((cls.currentBookings || 0) < cls.maxCapacity) {
+          try {
+            if (!allUsersCache) allUsersCache = await getAllUsers();
+            const datalist = document.getElementById('admin-user-datalist');
+            if (datalist) {
+              const existingUserIds = new Set(bookings.map(b => b.userId));
+              const availableUsers = allUsersCache.filter(u => !existingUserIds.has(u.uid) && u.role !== 'admin');
+              datalist.innerHTML = availableUsers.map(u =>
+                `<option value="${escapeHtml(u.email)}">${escapeHtml(u.name)} (${escapeHtml(u.email)})</option>`
+              ).join('');
+            }
+            const bookBtn = document.getElementById('admin-book-btn');
+            if (bookBtn) {
+              bookBtn.addEventListener('click', async () => {
+                const searchVal = document.getElementById('admin-book-search').value.trim();
+                if (!searchVal) { showToast('Adj meg egy nevet vagy email címet!', 'error'); return; }
+                if (!allUsersCache) allUsersCache = await getAllUsers();
+                const targetUser = allUsersCache.find(u => u.email === searchVal || u.name === searchVal);
+                if (!targetUser) { showToast('Felhasználó nem található!', 'error'); return; }
+                bookBtn.disabled = true; bookBtn.textContent = 'Foglalás...';
+                try {
+                  await adminBookClass(targetUser, cls);
+                  showToast(`${targetUser.name} sikeresen bejelentkezve!`, 'success');
+                  allBookingsCache = null;
+                  await showParticipants(cls);
+                  loadAdminClasses();
+                } catch (err) {
+                  showToast('Hiba: ' + err.message, 'error');
+                  bookBtn.disabled = false; bookBtn.textContent = 'Foglalás';
+                }
+              });
+            }
+          } catch (e) { /* silent */ }
+        }
 
       } catch (err) {
         participantsList.innerHTML = `<p class="text-danger text-center py-4 mb-0">Hiba: ${escapeHtml(err.message)}</p>`;
@@ -915,6 +988,7 @@
         <div class="d-flex align-items-center gap-2 mb-2">
           <span class="badge" style="background:${t.bgColor};color:${t.textColor}">${escapeHtml(t.label)}</span>
           <code class="small text-muted">${escapeHtml(t.value)}</code>
+          <span class="small text-muted">(${t.defaultCapacity || 10} fő)</span>
           <button type="button" class="remove-type-btn btn btn-sm btn-link text-danger p-0 ms-auto" data-index="${i}" title="Törlés">
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -959,11 +1033,12 @@
         return;
       }
 
-      classTypes.push({ value, label, bgColor, textColor });
+      classTypes.push({ value, label, bgColor, textColor, defaultCapacity: parseInt(document.getElementById('new-type-capacity').value) || 10 });
       await saveClassTypes(classTypes);
       addTypeForm.reset();
       document.getElementById('new-type-bg').value = '#e6edde';
       document.getElementById('new-type-text').value = '#425634';
+      document.getElementById('new-type-capacity').value = '10';
       renderTypesBadges();
       renderTypesEditor();
       populateTypeSelect();
@@ -976,6 +1051,14 @@
         `<option value="${escapeHtml(t.value)}">${escapeHtml(t.label)}</option>`
       ).join('');
     }
+
+    // Auto-fill capacity when class type changes (only for new classes)
+    document.getElementById('class-type').addEventListener('change', (e) => {
+      const type = classTypes.find(t => t.value === e.target.value);
+      if (type && type.defaultCapacity && !editClassId.value) {
+        document.getElementById('class-capacity').value = type.defaultCapacity;
+      }
+    });
 
     // ── Clone week modal ────────────────────────────────
     const cloneModal = document.getElementById('clone-modal');

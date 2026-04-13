@@ -31,9 +31,12 @@ const firebaseConfig = {
 //  PRODUCTION: Also restrict this key's HTTP referrers in
 //  Google Cloud Console (same steps as the Firebase key above).
 // ============================================================
+// IMPORTANT: Use a SEPARATE, scope-restricted API key for Google Calendar.
+// Google Cloud Console → APIs & Services → Credentials → Create API Key
+// → Restrict to "Google Calendar API" only + add HTTP referrer restrictions.
 const googleCalendarConfig = {
   clientId: "443002743783-oihpqtepcddfobor5abprjk5gh54ra0r.apps.googleusercontent.com",
-  apiKey:   "AIzaSyD2lNojoM0RLDFFDWK4qwKOZwppGgRNp6E",
+  apiKey:   "AIzaSyD2lNojoM0RLDFFDWK4qwKOZwppGgRNp6E", // TODO: Replace with a separate Calendar-only API key
 };
 
 // ============================================================

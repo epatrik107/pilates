@@ -1,6 +1,6 @@
 import {
   collection, addDoc, getDocs, getDoc, deleteDoc, updateDoc, doc,
-  query, where, orderBy, serverTimestamp, runTransaction
+  query, where, orderBy, serverTimestamp, runTransaction, Timestamp
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 import { db } from './firebase-config.js';
 import { removeEventFromGoogleCalendar, isGoogleCalendarAPIConfigured } from './google-calendar.js';
@@ -20,6 +20,7 @@ export async function bookClass(user, classData) {
   }
 
   const classRef = doc(db, 'classes', classData.id);
+  const classStartDate = new Date(`${classData.date}T${classData.startTime || '00:00'}:00`);
 
   const newBookingRef = await runTransaction(db, async (transaction) => {
     const classSnap = await transaction.get(classRef);
@@ -48,6 +49,7 @@ export async function bookClass(user, classData) {
       classLocation:    classData.location || '',
       instructorName:   classData.instructorName || '',
       classDescription: classData.description || '',
+      classStartTimestamp: Timestamp.fromDate(classStartDate),
       calendarEventId:  null,
       bookedAt:         serverTimestamp()
     });
@@ -167,4 +169,45 @@ export async function getBookingsForClass(classId) {
 export async function getAllBookings() {
   const snap = await getDocs(query(bookingsRef, orderBy('classDate')));
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+// ═══════════════════════════════════════════════════════════
+//  ADMIN BOOKING – Book a class on behalf of a user
+// ═══════════════════════════════════════════════════════════
+export async function adminBookClass(targetUser, classData) {
+  const classRef = doc(db, 'classes', classData.id);
+  const classStartDate = new Date(`${classData.date}T${classData.startTime || '00:00'}:00`);
+
+  const newBookingRef = await runTransaction(db, async (transaction) => {
+    const classSnap = await transaction.get(classRef);
+    if (!classSnap.exists()) throw new Error('Az óra nem létezik!');
+
+    const current = classSnap.data().currentBookings || 0;
+    const max     = classSnap.data().maxCapacity || 0;
+    if (current >= max) throw new Error('Az óra már betelt!');
+
+    const bookingRef = doc(collection(db, 'bookings'));
+
+    transaction.set(bookingRef, {
+      userId:              targetUser.uid,
+      userName:            targetUser.name || 'Névtelen',
+      userEmail:           targetUser.email || '',
+      classId:             classData.id,
+      classTitle:          classData.title,
+      classDate:           classData.date,
+      classStartTime:      classData.startTime,
+      classDuration:       parseInt(classData.duration) || 60,
+      classLocation:       classData.location || '',
+      instructorName:      classData.instructorName || '',
+      classDescription:    classData.description || '',
+      classStartTimestamp: Timestamp.fromDate(classStartDate),
+      calendarEventId:     null,
+      bookedAt:            serverTimestamp(),
+      bookedByAdmin:       true
+    });
+
+    transaction.update(classRef, { currentBookings: current + 1 });
+    return bookingRef;
+  });
+
+  return newBookingRef;
 }

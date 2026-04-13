@@ -70,10 +70,15 @@ export async function updateClass(classId, data) {
   return await updateDoc(ref, data);
 }
 
-// ── Delete class (admin) ────────────────────────────────────
+// ── Archive class (soft-delete, admin) ─────────────────────────
 export async function deleteClass(classId) {
   const ref = doc(db, 'classes', classId);
-  return await deleteDoc(ref);
+  return await updateDoc(ref, { archived: true });
+}
+
+export async function restoreClass(classId) {
+  const ref = doc(db, 'classes', classId);
+  return await updateDoc(ref, { archived: false });
 }
 
 // ── Get upcoming classes ────────────────────────────────────
@@ -90,16 +95,19 @@ export async function getUpcomingClasses() {
   return snap.docs
     .map(d => ({ id: d.id, ...d.data() }))
     .filter(cls => {
+      if (cls.archived) return false;
       const start = new Date(`${cls.date}T${cls.startTime || '00:00'}`);
       return start > now;
     });
 }
 
 // ── Get all classes (admin) ─────────────────────────────────
-export async function getAllClasses() {
+export async function getAllClasses(includeArchived = false) {
   const q    = query(classesRef, orderBy('date', 'desc'), orderBy('startTime', 'desc'));
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(cls => includeArchived || !cls.archived);
 }
 
 // ── Get single class ────────────────────────────────────────

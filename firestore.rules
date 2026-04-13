@@ -1,5 +1,11 @@
 rules_version = '2';
 
+// ═══════════════════════════════════════════════════════════
+// App Check ENFORCEMENT must be enabled in Firebase Console:
+// Firebase Console → App Check → Apps → Enforce (Firestore + Auth)
+// Without enforcement, bots can bypass these rules entirely.
+// ═══════════════════════════════════════════════════════════
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -59,15 +65,33 @@ service cloud.firestore {
         );
     }
 
+    // 24-hour cancellation policy – server-side enforcement
+    function canUserCancelBooking() {
+      // Backward compat: bookings without classStartTimestamp are unrestricted
+      return !('classStartTimestamp' in resource.data)
+        // More than 24 hours before class start
+        || request.time < (resource.data.classStartTimestamp - duration.value(24, 'h'))
+        // Grace period: within 5 minutes of booking creation
+        || ('bookedAt' in resource.data && resource.data.bookedAt != null
+            && request.time < (resource.data.bookedAt + duration.value(5, 'm')));
+    }
+
     match /bookings/{bookingId} {
       allow read: if isSignedIn()
         && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isSignedIn()
-        && request.resource.data.userId == request.auth.uid
+        && (
+          // Normal user booking
+          (
+            request.resource.data.userId == request.auth.uid
+            && request.resource.data.userName is string
+            && request.resource.data.userName.size() <= 100
+            && request.resource.data.userEmail is string
+          )
+          // Admin booking on behalf of a user
+          || isAdmin()
+        )
         && request.resource.data.classId is string
-        && request.resource.data.userName is string
-        && request.resource.data.userName.size() <= 100
-        && request.resource.data.userEmail is string
         && request.resource.data.classTitle is string
         && request.resource.data.classDate is string
         && request.resource.data.keys().hasAll(['userId', 'classId', 'userName', 'userEmail', 'classTitle', 'classDate'])
@@ -78,7 +102,10 @@ service cloud.firestore {
           || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attended']))
         );
       allow delete: if isSignedIn()
-        && (resource.data.userId == request.auth.uid || isAdmin());
+        && (
+          isAdmin()
+          || (resource.data.userId == request.auth.uid && canUserCancelBooking())
+        );
     }
 
     match /waitlist/{waitlistId} {
