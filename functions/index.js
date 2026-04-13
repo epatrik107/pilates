@@ -301,7 +301,7 @@ exports.onBookingCreated = onDocumentCreated(
         apiKey:   RESEND_API_KEY.value(),
         to:       userEmail,
         subject:  `Foglalás visszaigazolva – ${classTitle} (${dateStr} ${classStartTime})`,
-        html:     bookingConfirmationHtml({ userName, classTitle, dateStr, classStartTime, classDuration, classLocation, instructorName }),
+        html:     bookingConfirmationHtml({ userName, classTitle, classDate, dateStr, classStartTime, classDuration, classLocation, instructorName }),
         attachments: [{
           filename: 'Balance-Studio-foglalás.ics',
           content:  icsBase64
