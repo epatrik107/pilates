@@ -367,3 +367,6 @@ a.text-sage:hover { color: var(--sage-700); }
 [data-theme="dark"] .bg-danger.bg-opacity-10 { background-color: rgba(220, 53, 69, 0.15) !important; }
 
 [data-theme="dark"] details summary { color: #8a7a6a; }
+
+[data-theme="dark"] .hero-gradient { background: linear-gradient(135deg, #1a1510 0%, #2a2018 50%, #121010 100%); }
+[data-theme="dark"] .border-white { border-color: #3d3020 !important; }
