@@ -370,7 +370,7 @@ exports.onBookingCreated = onDocumentCreated(
 exports.onBookingDeleted = onDocumentDeleted(
   { document: 'bookings/{bookingId}', secrets: [RESEND_API_KEY], region: REGION },
   async (event) => {
-    const data = event.data.previous.data();
+    const data = event.data.data();
     if (!data) return;
 
     const { userEmail, userName, classTitle, classDate, classStartTime, classDuration, classLocation, instructorName } = data;
