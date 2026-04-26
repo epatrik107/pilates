@@ -113,11 +113,14 @@
     initCookieConsent();
 
     // ── Handle Google redirect result (mobile sign-in) ──
-    handleGoogleRedirect().then(() => {
-      if (auth.currentUser) {
-        window.location.href = 'index.html';
-      }
-    });
+    const _actionMode = new URLSearchParams(window.location.search).get('mode');
+    if (!_actionMode) {
+      handleGoogleRedirect().then(() => {
+        if (auth.currentUser) {
+          window.location.href = 'index.html';
+        }
+      });
+    }
 
     // ── Handle Firebase email action links (verifyEmail, resetPassword) ──
     const urlParams = new URLSearchParams(window.location.search);
@@ -125,6 +128,8 @@
     const oobCode = urlParams.get('oobCode');
 
     if (mode === 'resetPassword' && oobCode) {
+      // Sign out first so auth state doesn't interfere with the reset flow
+      if (auth.currentUser) await logoutUser().catch(() => {});
       // Hide normal login form, show new password form
       document.getElementById('login-form').classList.add('d-none');
       document.querySelector('.mt-4.text-center').classList.add('d-none');
