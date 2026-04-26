@@ -33,6 +33,10 @@ h1, h2, h3, .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
 .nav-link.btn-sage { background: var(--sage-600); color: #fff !important; border-radius: 0.5rem; padding: 0.4rem 1rem !important; }
 .nav-link.btn-sage:hover { background: var(--sage-700); }
 
+@media (max-width: 767.98px) {
+  .nav-link.btn-sage { margin-left: 0 !important; margin-top: 0.25rem; display: inline-block; text-align: center; }
+}
+
 /* ── Buttons ─────────────────────────────────────────────── */
 .btn-sage { background: var(--sage-600); color: #fff; border: none; border-radius: 0.6rem; font-weight: 500; }
 .btn-sage:hover { background: var(--sage-700); color: #fff; }

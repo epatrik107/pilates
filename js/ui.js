@@ -149,7 +149,7 @@ export function initNavbar() {
         <li class="nav-item"><a href="about.html" class="nav-link">Rólam</a></li>`;
       navRight.innerHTML = `
         <li class="nav-item"><a href="login.html" class="nav-link">Bejelentkezés</a></li>
-        <li class="nav-item"><a href="register.html" class="nav-link btn-sage ms-1">Regisztráció</a></li>`;
+        <li class="nav-item"><a href="register.html" class="nav-link btn-sage ms-md-1">Regisztráció</a></li>`;
       appendThemeToggle(navRight);
       return;
     }
