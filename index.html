@@ -201,7 +201,11 @@
       return found ? escapeHtml(found.label) : (escapeHtml(t) || 'Pilates');
     }
 
+    let currentRenderId = 0;
+
     async function renderClasses() {
+      const myRenderId = ++currentRenderId;
+
       const typeVal = filterType.value;
       const instrVal = filterInstructor.value;
       const activeDays = new Set([...dayCheckboxes].filter(cb => cb.checked).map(cb => Number(cb.value)));
@@ -298,6 +302,9 @@
         }
         html += '</div>';
       }
+      
+      if (myRenderId !== currentRenderId) return;
+      
       container.innerHTML = html;
 
       container.querySelectorAll('.book-btn').forEach(btn => {
