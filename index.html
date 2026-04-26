@@ -236,10 +236,10 @@
           else if (free <= 2) { statusHtml = `${free} szabad hely!`; statusClass = 'text-danger'; }
           else { statusHtml = `${free} szabad hely`; statusClass = 'text-success'; }
 
-          let waitlistEntry = null;
-          if (currentUser && isFull && !userBooking) {
-            try { waitlistEntry = await getUserWaitlistEntry(currentUser.uid, cls.id); } catch (e) { /* waitlist query failed, show join button */ }
-          }
+          // let waitlistEntry = null;
+          // if (currentUser && isFull && !userBooking) {
+          //   try { waitlistEntry = await getUserWaitlistEntry(currentUser.uid, cls.id); } catch (e) { /* waitlist query failed, show join button */ }
+          // }
 
           let actionBtn;
           if (currentUser) {
@@ -259,10 +259,12 @@
               } else {
                 actionBtn = `<button class="btn btn-sm btn-outline-secondary" disabled title="Lemondás már nem lehetséges (24 órán belül)">Foglalva</button>`;
               }
-            } else if (isFull && waitlistEntry) {
-              actionBtn = `<button class="btn btn-sm btn-outline-warning waitlist-leave-btn" data-waitlist-id="${waitlistEntry.id}">Várólistán vagy</button>`;
+            // } else if (isFull && waitlistEntry) {
+            //   actionBtn = `<button class="btn btn-sm btn-outline-warning waitlist-leave-btn" data-waitlist-id="${waitlistEntry.id}">Várólistán vagy</button>`;
+            // } else if (isFull) {
+            //   actionBtn = `<button class="btn btn-sm btn-sage-outline waitlist-join-btn" data-class-id="${cls.id}">Várólistára</button>`;
             } else if (isFull) {
-              actionBtn = `<button class="btn btn-sm btn-sage-outline waitlist-join-btn" data-class-id="${cls.id}">Várólistára</button>`;
+              actionBtn = `<button class="btn btn-sm btn-secondary" disabled>Betelt</button>`;
             } else {
               actionBtn = `<button class="btn btn-sm btn-sage book-btn" data-class-id="${cls.id}">Foglalás</button>`;
             }
