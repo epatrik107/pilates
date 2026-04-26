@@ -144,6 +144,8 @@ export function initNavbar() {
       navLinks.innerHTML = `
         <li class="nav-item"><a href="index.html" class="nav-link">Órarend</a></li>
         <li class="nav-item"><a href="prices.html" class="nav-link">Árlista</a></li>
+        <li class="nav-item"><a href="class-types.html" class="nav-link">Óratípusok</a></li>
+        <li class="nav-item"><a href="faq.html" class="nav-link">GYIK</a></li>
         <li class="nav-item"><a href="about.html" class="nav-link">Rólam</a></li>`;
       navRight.innerHTML = `
         <li class="nav-item"><a href="login.html" class="nav-link">Bejelentkezés</a></li>
@@ -159,6 +161,8 @@ export function initNavbar() {
     navLinks.innerHTML = `
       <li class="nav-item"><a href="index.html" class="nav-link">Órarend</a></li>
       <li class="nav-item"><a href="prices.html" class="nav-link">Árlista</a></li>
+      <li class="nav-item"><a href="class-types.html" class="nav-link">Óratípusok</a></li>
+      <li class="nav-item"><a href="faq.html" class="nav-link">GYIK</a></li>
       <li class="nav-item"><a href="about.html" class="nav-link">Rólam</a></li>
       ${role === 'admin' ? '<li class="nav-item"><a href="admin.html" class="nav-link">Admin</a></li>' : '<li class="nav-item"><a href="bookings.html" class="nav-link">Foglalásaim</a></li>'}
       <li class="nav-item"><a href="profile.html" class="nav-link">Profilom</a></li>`;
