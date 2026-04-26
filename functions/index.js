@@ -10,7 +10,7 @@
 //    firebase deploy --only functions
 // ============================================================
 
-const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onDocumentCreated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const { onSchedule }        = require('firebase-functions/v2/scheduler');
 const { defineSecret }      = require('firebase-functions/params');
 const admin                 = require('firebase-admin');
@@ -22,6 +22,7 @@ const db = admin.firestore();
 const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
 
 const RESEND_FROM = 'Balance Studio <noreply@balance-studio.hu>';
+const ADMIN_EMAIL = 'balance.szonja@gmail.com'; // Átírható az admin valós email címére
 const SITE_URL    = 'https://balance-studio.hu';
 const REGION      = 'europe-west1';
 
@@ -178,6 +179,42 @@ function classDetailsTable({ classTitle, dateStr, classStartTime, classDuration,
     </table>`;
 }
 
+function adminBookingNotificationHtml(data, isCancellation = false) {
+  const title = isCancellation ? '❌ Óra lemondás történt' : '✅ Új foglalás történt';
+  return emailWrapper(`
+    <p style="margin:0 0 16px;font-size:16px;color:#3f2b17;">Kedves Admin!</p>
+    <p style="margin:0 0 20px;font-size:15px;color:#5e4229;">
+      <strong>${title}</strong>
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0"
+           style="background:#f5ece0;border-radius:8px;padding:20px;margin-bottom:24px;">
+      <tr><td style="padding:6px 0;">
+        <span style="font-size:12px;color:#9a7251;text-transform:uppercase;letter-spacing:0.5px;">Felhasználó</span><br>
+        <strong style="font-size:16px;color:#3f2b17;">${data.userName} (${data.userEmail})</strong>
+      </td></tr>
+      <tr><td style="padding:6px 0;border-top:1px solid #e8d5be;">
+        <span style="font-size:12px;color:#9a7251;text-transform:uppercase;letter-spacing:0.5px;">Óra neve</span><br>
+        <strong style="font-size:15px;color:#3f2b17;">${data.classTitle}</strong>
+      </td></tr>
+      <tr><td style="padding:6px 0;border-top:1px solid #e8d5be;">
+        <span style="font-size:12px;color:#9a7251;text-transform:uppercase;letter-spacing:0.5px;">Időpont</span><br>
+        <strong style="font-size:15px;color:#3f2b17;">${data.dateStr} ${data.classStartTime}</strong>
+      </td></tr>
+    </table>
+  `);
+}
+
+function cancellationHtml(data) {
+  const firstName = (data.userName || 'Kedves').split(' ').slice(-1)[0];
+  return emailWrapper(`
+    <p style="margin:0 0 16px;font-size:16px;color:#3f2b17;">Kedves <strong>${firstName}</strong>!</p>
+    <p style="margin:0 0 20px;font-size:15px;color:#5e4229;">
+      Sikeresen lemondtad az alábbi órádat. Sajnáljuk, hogy most nem tudsz jönni, reméljük hamarosan újra látunk!
+    </p>
+    ${classDetailsTable(data)}
+  `);
+}
+
 // ── 1. Foglalás visszaigazolás (lemondás gomb + naptár) ──────
 function bookingConfirmationHtml(data) {
   const firstName = (data.userName || 'Kedves').split(' ').slice(-1)[0];
@@ -310,6 +347,60 @@ exports.onBookingCreated = onDocumentCreated(
       console.log(`Booking confirmation sent to ${userEmail}`);
     } catch (err) {
       console.error('onBookingCreated email error:', err.message);
+    }
+
+    try {
+      await sendEmail({
+        apiKey:   RESEND_API_KEY.value(),
+        to:       ADMIN_EMAIL,
+        subject:  `Új foglalás: ${userName} – ${classTitle} (${dateStr})`,
+        html:     adminBookingNotificationHtml({ ...data, dateStr })
+      });
+      console.log(`Booking admin notification sent to ${ADMIN_EMAIL}`);
+    } catch (err) {
+      console.error('onBookingCreated admin email error:', err.message);
+    }
+  }
+);
+
+// ═══════════════════════════════════════════════════════════
+//  1.1 FOGLALÁS TÖRLÉS
+//     Firestore trigger: /bookings/{id} dokumentum törlődik
+// ═══════════════════════════════════════════════════════════
+exports.onBookingDeleted = onDocumentDeleted(
+  { document: 'bookings/{bookingId}', secrets: [RESEND_API_KEY], region: REGION },
+  async (event) => {
+    const data = event.data.previous.data();
+    if (!data) return;
+
+    const { userEmail, userName, classTitle, classDate, classStartTime, classDuration, classLocation, instructorName } = data;
+
+    if (!userEmail || !classDate) return;
+
+    const dateStr = formatHungarianDate(classDate);
+
+    try {
+      await sendEmail({
+        apiKey:   RESEND_API_KEY.value(),
+        to:       userEmail,
+        subject:  `Foglalás lemondva – ${classTitle} (${dateStr})`,
+        html:     cancellationHtml({ userName, classTitle, classDate, dateStr, classStartTime, classDuration, classLocation, instructorName })
+      });
+      console.log(`Cancellation confirmation sent to ${userEmail}`);
+    } catch (err) {
+      console.error('onBookingDeleted user email error:', err.message);
+    }
+
+    try {
+      await sendEmail({
+        apiKey:   RESEND_API_KEY.value(),
+        to:       ADMIN_EMAIL,
+        subject:  `Lemondás: ${userName} – ${classTitle} (${dateStr})`,
+        html:     adminBookingNotificationHtml({ ...data, dateStr }, true)
+      });
+      console.log(`Cancellation admin notification sent to ${ADMIN_EMAIL}`);
+    } catch (err) {
+      console.error('onBookingDeleted admin email error:', err.message);
     }
   }
 );
