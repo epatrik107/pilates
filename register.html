@@ -27,9 +27,15 @@
     <div class="card auth-card rounded-4">
       <div class="card-body p-4 p-md-5">
         <form id="register-form">
-          <div class="mb-3">
-            <label for="name" class="form-label">Teljes név</label>
-            <input type="text" id="name" class="form-control" placeholder="Kovács Anna" required />
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label for="last-name" class="form-label">Vezetéknév</label>
+              <input type="text" id="last-name" class="form-control" placeholder="Kovács" required autocomplete="family-name" />
+            </div>
+            <div class="col-6">
+              <label for="first-name" class="form-label">Keresztnév</label>
+              <input type="text" id="first-name" class="form-control" placeholder="Anna" required autocomplete="given-name" />
+            </div>
           </div>
 
           <div class="mb-3">
@@ -190,7 +196,9 @@
         return;
       }
 
-      const name      = document.getElementById('name').value.trim();
+      const lastName  = document.getElementById('last-name').value.trim();
+      const firstName  = document.getElementById('first-name').value.trim();
+      const name       = `${lastName} ${firstName}`;
       const email     = document.getElementById('email').value.trim();
       const password  = pwInput.value;
       const password2 = document.getElementById('password2').value;
