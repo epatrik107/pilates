@@ -405,7 +405,8 @@
       verifyPanel.classList.add('d-none');
       try {
         const remember = document.getElementById('remember-me').checked;
-        await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
+        // Nem várjuk meg (await) a setPersistence-t, különben a böngésző megszakítja a kattintás eseményét és blokkolja a felugró ablakot (popup-blocked hiba)
+        setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
         const user = await signInWithGoogle();
         if (!user) return; // redirect flow — page will reload
         if (!user.emailVerified) {

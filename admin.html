@@ -650,7 +650,13 @@
           html += `<div class="mb-3">
             <div class="schedule-date-header">${getWeekLabel(monday)}</div>
             <div class="bg-white border border-top-0 rounded-bottom">`;
+          let lastDate = null;
           for (const cls of weeks[monday]) {
+            if (cls.date !== lastDate) {
+              if (lastDate !== null) html += `<div class="admin-day-divider"></div>`;
+              html += `<div class="admin-day-label">${fullDay(cls.date)}</div>`;
+              lastDate = cls.date;
+            }
             html += adminClassRow(cls);
           }
           html += `</div></div>`;
@@ -670,7 +676,13 @@
           html += `<div class="mb-3">
             <div class="schedule-date-header" style="opacity:0.7">${getWeekLabel(monday)}</div>
             <div class="bg-white border border-top-0 rounded-bottom">`;
+          let lastDate = null;
           for (const cls of pastWeeks[monday]) {
+            if (cls.date !== lastDate) {
+              if (lastDate !== null) html += `<div class="admin-day-divider"></div>`;
+              html += `<div class="admin-day-label">${fullDay(cls.date)}</div>`;
+              lastDate = cls.date;
+            }
             html += adminClassRow(cls, true);
           }
           html += `</div></div>`;
@@ -727,6 +739,13 @@
       const dayName = d.toLocaleDateString('hu-HU', { weekday: 'short' });
       const dayNum  = d.getDate();
       return `${dayName.charAt(0).toUpperCase() + dayName.slice(1)} ${dayNum}.`;
+    }
+
+    function fullDay(dateStr) {
+      const d = new Date(dateStr + 'T12:00:00');
+      const dayName = d.toLocaleDateString('hu-HU', { weekday: 'long' });
+      const dateLabel = d.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' });
+      return `${dayName.charAt(0).toUpperCase() + dayName.slice(1)}, ${dateLabel}`;
     }
 
     function adminClassRow(cls, isPast = false) {

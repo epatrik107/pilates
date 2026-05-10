@@ -76,6 +76,22 @@ h1, h2, h3, .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
 .schedule-row:hover { background: #fafafa; }
 .schedule-row:last-child { border-bottom: none; }
 
+/* ── Admin day separators ────────────────────────────────── */
+.admin-day-label {
+  background: var(--sage-50);
+  border-bottom: 1px solid #e8e0d5;
+  color: var(--sage-700);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.35rem 1rem;
+  text-transform: uppercase;
+}
+.admin-day-divider {
+  border-top: 2px solid var(--sage-200);
+  margin: 0;
+}
+
 /* ── Profile avatar ──────────────────────────────────────── */
 .avatar-circle {
   width: 60px; height: 60px;
@@ -336,6 +352,8 @@ a.text-sage:hover { color: var(--sage-700); }
 [data-theme="dark"] .schedule-date-header { background: var(--sage-400); }
 [data-theme="dark"] .schedule-row { border-bottom-color: #2a2018; }
 [data-theme="dark"] .schedule-row:hover { background: #2a2018; }
+[data-theme="dark"] .admin-day-label { background: #211d18; border-bottom-color: #3d3020; color: var(--sage-300); }
+[data-theme="dark"] .admin-day-divider { border-top-color: #3d3020; }
 
 [data-theme="dark"] .border,
 [data-theme="dark"] .border-bottom,
