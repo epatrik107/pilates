@@ -421,13 +421,13 @@ exports.sendDailyReminders = onSchedule(
 
     const snap = await db.collection('bookings')
       .where('classDate', '==', tomorrowStr)
-      .where('reminderSent', '!=', true)
       .get();
 
-    console.log(`Sending reminders for ${snap.docs.length} bookings on ${tomorrowStr}`);
+    const docsToRemind = snap.docs.filter(d => d.data().reminderSent !== true);
+    console.log(`Sending reminders for ${docsToRemind.length} bookings on ${tomorrowStr} (${snap.docs.length} total tomorrow)`);
 
     const results = await Promise.allSettled(
-      snap.docs.map(async (docSnap) => {
+      docsToRemind.map(async (docSnap) => {
         const d = docSnap.data();
         if (!d.userEmail) return;
 

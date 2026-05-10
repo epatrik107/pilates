@@ -28,6 +28,7 @@ functions/.env
 
 # Firebase
 .firebase/
+functions/serviceAccountKey.json
 firebase-debug.log
 
 # IMPORTANT NOTE:

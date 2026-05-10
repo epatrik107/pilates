@@ -51,6 +51,7 @@ export async function bookClass(user, classData) {
       classDescription: classData.description || '',
       classStartTimestamp: Timestamp.fromDate(classStartDate),
       calendarEventId:  null,
+      reminderSent:     false,
       bookedAt:         serverTimestamp()
     });
 
