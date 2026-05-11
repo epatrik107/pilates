@@ -269,12 +269,12 @@ function reminderHtml(data) {
   return emailWrapper(`
     <p style="margin:0 0 16px;font-size:16px;color:#3f2b17;">Kedves <strong>${firstName}</strong>!</p>
     <p style="margin:0 0 20px;font-size:15px;color:#5e4229;">
-      Emlékeztetünk, hogy holnap pilates óra vár rád! 🧘
+      Emlékeztetünk, hogy holnap Pilates óra vár rád! 🧘
     </p>
     ${classDetailsTable(data)}
     <p style="margin:0;font-size:14px;color:#5c3d2e;line-height:1.7;">
       Ha már nem tudsz részt venni, kérünk jelezd nekünk telefonon vagy emailben, mert a 24 órán belüli
-      lemondás fizetési kötelezettséggel járhat.
+      lemondás fizetési kötelezettséggel jár.
     </p>
   `);
 }

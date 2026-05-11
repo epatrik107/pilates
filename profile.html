@@ -215,22 +215,17 @@
       const hasPassword = providers.includes('password');
       const hasGoogle   = providers.includes('google.com');
 
-      if (hasPassword) {
-        // Email/jelszó regisztrált: a születésnap regisztrációkor lett megadva, nem módosítható
-        birthdaySection.classList.add('hidden');
-      } else if (hasGoogle) {
-        // Google user: megjelenítjük, de ha már be van állítva, zároljuk
-        birthdaySection.classList.remove('hidden');
-        if (profile?.birthdayDate) {
-          const input = document.getElementById('birthday-input');
-          input.value    = profile.birthdayDate;
-          input.disabled = true;
-          document.getElementById('birthday-save-btn').classList.add('hidden');
-          const msg = document.getElementById('birthday-msg');
-          msg.textContent = 'A születési dátum már be van állítva és nem módosítható.';
-          msg.className   = 'small mt-2 mb-0 text-muted';
-          msg.classList.remove('hidden');
-        }
+      // Születésnap szekció: mindenkinél megjelenik, de ha már be van állítva, zároljuk
+      birthdaySection.classList.remove('hidden');
+      if (profile?.birthdayDate) {
+        const input = document.getElementById('birthday-input');
+        input.value    = profile.birthdayDate;
+        input.disabled = true;
+        document.getElementById('birthday-save-btn').classList.add('hidden');
+        const msg = document.getElementById('birthday-msg');
+        msg.textContent = 'A születési dátum már be van állítva és nem módosítható.';
+        msg.className   = 'small mt-2 mb-0 text-muted';
+        msg.classList.remove('hidden');
       }
 
       // Show verification banner if email not verified
