@@ -12,6 +12,7 @@
 
 const { onDocumentCreated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const { onSchedule }        = require('firebase-functions/v2/scheduler');
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret }      = require('firebase-functions/params');
 const admin                 = require('firebase-admin');
 
@@ -31,6 +32,75 @@ const HU_MONTHS = [
   'január','február','március','április','május','június',
   'július','augusztus','szeptember','október','november','december'
 ];
+
+function htmlEscape(value = '') {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
+
+function icsEscape(value = '') {
+  return String(value)
+    .replace(/\\/g, '\\\\')
+    .replace(/\r?\n/g, '\\n')
+    .replace(/([;,])/g, '\\$1');
+}
+
+function singleLineText(value = '') {
+  return String(value).replace(/[\r\n]+/g, ' ').trim();
+}
+
+function sanitizeDisplayName(name) {
+  return String(name || 'Felhasználó')
+    .replace(/[<>]/g, '')
+    .trim()
+    .slice(0, 100) || 'Felhasználó';
+}
+
+function requireAuth(request, { verified = false } = {}) {
+  const auth = request.auth;
+  if (!auth?.uid) {
+    throw new HttpsError('unauthenticated', 'Bejelentkezés szükséges.');
+  }
+  if (verified && auth.token.email_verified !== true) {
+    throw new HttpsError('failed-precondition', 'Csak megerősített email címmel használható.');
+  }
+  return auth.uid;
+}
+
+function requireString(value, fieldName) {
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new HttpsError('invalid-argument', `Hiányzó vagy hibás mező: ${fieldName}.`);
+  }
+  return value.trim();
+}
+
+async function isAdminUser(uid) {
+  const snap = await db.collection('users').doc(uid).get();
+  return snap.exists && snap.data().role === 'admin';
+}
+
+function getClassStartDate(classData) {
+  return new Date(`${classData.date}T${classData.startTime || '00:00'}:00`);
+}
+
+function canCancelBookingData(data, now = new Date()) {
+  if (!data.classStartTimestamp) return true;
+  const classStart = data.classStartTimestamp.toDate
+    ? data.classStartTimestamp.toDate()
+    : new Date(data.classStartTimestamp);
+  const bookedAt = data.bookedAt?.toDate
+    ? data.bookedAt.toDate()
+    : data.bookedAt
+      ? new Date(data.bookedAt)
+      : null;
+  return now < new Date(classStart.getTime() - 24 * 60 * 60 * 1000)
+    || (bookedAt && now < new Date(bookedAt.getTime() + 5 * 60 * 1000));
+}
 
 function formatHungarianDate(dateStr) {
   // dateStr: YYYY-MM-DD → "2026. április 14."
@@ -82,9 +152,9 @@ function buildICS({ classTitle, classDate, classStartTime, classDuration, classL
     `UID:${uid}`,
     `DTSTART;TZID=Europe/Budapest:${startDt}`,
     `DTEND;TZID=Europe/Budapest:${endDt}`,
-    `SUMMARY:${classTitle} – Balance Studio`,
-    `DESCRIPTION:${desc}`,
-    ...(classLocation ? [`LOCATION:${classLocation}`] : []),
+    `SUMMARY:${icsEscape(classTitle)} – Balance Studio`,
+    `DESCRIPTION:${icsEscape(desc)}`,
+    ...(classLocation ? [`LOCATION:${icsEscape(classLocation)}`] : []),
     `URL:${SITE_URL}/bookings.html`,
     'STATUS:CONFIRMED',
     'END:VEVENT',
@@ -161,20 +231,20 @@ function classDetailsTable({ classTitle, dateStr, classStartTime, classDuration,
            style="background:#f5ece0;border-radius:8px;padding:20px;margin-bottom:24px;">
       <tr><td style="padding:6px 0;">
         <span style="font-size:12px;color:#9a7251;text-transform:uppercase;letter-spacing:0.5px;">Óra neve</span><br>
-        <strong style="font-size:16px;color:#3f2b17;">${classTitle}</strong>
+        <strong style="font-size:16px;color:#3f2b17;">${htmlEscape(classTitle)}</strong>
       </td></tr>
       <tr><td style="padding:6px 0;border-top:1px solid #e8d5be;">
         <span style="font-size:12px;color:#9a7251;text-transform:uppercase;letter-spacing:0.5px;">Időpont</span><br>
-        <strong style="font-size:15px;color:#3f2b17;">${dateStr} ${classStartTime}</strong>
-        ${classDuration ? `<span style="font-size:13px;color:#b8916a;"> (${classDuration} perc)</span>` : ''}
+        <strong style="font-size:15px;color:#3f2b17;">${htmlEscape(dateStr)} ${htmlEscape(classStartTime)}</strong>
+        ${classDuration ? `<span style="font-size:13px;color:#b8916a;"> (${htmlEscape(classDuration)} perc)</span>` : ''}
       </td></tr>
       ${classLocation ? `<tr><td style="padding:6px 0;border-top:1px solid #e8d5be;">
         <span style="font-size:12px;color:#9a7251;text-transform:uppercase;letter-spacing:0.5px;">Helyszín</span><br>
-        <strong style="font-size:15px;color:#3f2b17;">${classLocation}</strong>
+        <strong style="font-size:15px;color:#3f2b17;">${htmlEscape(classLocation)}</strong>
       </td></tr>` : ''}
       ${instructorName ? `<tr><td style="padding:6px 0;border-top:1px solid #e8d5be;">
         <span style="font-size:12px;color:#9a7251;text-transform:uppercase;letter-spacing:0.5px;">Oktató</span><br>
-        <strong style="font-size:15px;color:#3f2b17;">${instructorName}</strong>
+        <strong style="font-size:15px;color:#3f2b17;">${htmlEscape(instructorName)}</strong>
       </td></tr>` : ''}
     </table>`;
 }
@@ -190,22 +260,22 @@ function adminBookingNotificationHtml(data, isCancellation = false) {
            style="background:#f5ece0;border-radius:8px;padding:20px;margin-bottom:24px;">
       <tr><td style="padding:6px 0;">
         <span style="font-size:12px;color:#9a7251;text-transform:uppercase;letter-spacing:0.5px;">Felhasználó</span><br>
-        <strong style="font-size:16px;color:#3f2b17;">${data.userName} (${data.userEmail})</strong>
+        <strong style="font-size:16px;color:#3f2b17;">${htmlEscape(data.userName)} (${htmlEscape(data.userEmail)})</strong>
       </td></tr>
       <tr><td style="padding:6px 0;border-top:1px solid #e8d5be;">
         <span style="font-size:12px;color:#9a7251;text-transform:uppercase;letter-spacing:0.5px;">Óra neve</span><br>
-        <strong style="font-size:15px;color:#3f2b17;">${data.classTitle}</strong>
+        <strong style="font-size:15px;color:#3f2b17;">${htmlEscape(data.classTitle)}</strong>
       </td></tr>
       <tr><td style="padding:6px 0;border-top:1px solid #e8d5be;">
         <span style="font-size:12px;color:#9a7251;text-transform:uppercase;letter-spacing:0.5px;">Időpont</span><br>
-        <strong style="font-size:15px;color:#3f2b17;">${data.dateStr} ${data.classStartTime}</strong>
+        <strong style="font-size:15px;color:#3f2b17;">${htmlEscape(data.dateStr)} ${htmlEscape(data.classStartTime)}</strong>
       </td></tr>
     </table>
   `);
 }
 
 function cancellationHtml(data) {
-  const firstName = (data.userName || 'Kedves').split(' ').slice(-1)[0];
+  const firstName = htmlEscape((data.userName || 'Kedves').split(' ').slice(-1)[0]);
   return emailWrapper(`
     <p style="margin:0 0 16px;font-size:16px;color:#3f2b17;">Kedves <strong>${firstName}</strong>!</p>
     <p style="margin:0 0 20px;font-size:15px;color:#5e4229;">
@@ -217,7 +287,7 @@ function cancellationHtml(data) {
 
 // ── 1. Foglalás visszaigazolás (lemondás gomb + naptár) ──────
 function bookingConfirmationHtml(data) {
-  const firstName = (data.userName || 'Kedves').split(' ').slice(-1)[0];
+  const firstName = htmlEscape((data.userName || 'Kedves').split(' ').slice(-1)[0]);
   const gcalUrl = googleCalendarUrl(data);
   return emailWrapper(`
     <p style="margin:0 0 16px;font-size:16px;color:#3f2b17;">Kedves <strong>${firstName}</strong>!</p>
@@ -265,7 +335,7 @@ function bookingConfirmationHtml(data) {
 
 // ── 2. 24 órás emlékeztető (lemondás gomb NÉLKÜL) ───────────
 function reminderHtml(data) {
-  const firstName = (data.userName || 'Kedves').split(' ').slice(-1)[0];
+  const firstName = htmlEscape((data.userName || 'Kedves').split(' ').slice(-1)[0]);
   return emailWrapper(`
     <p style="margin:0 0 16px;font-size:16px;color:#3f2b17;">Kedves <strong>${firstName}</strong>!</p>
     <p style="margin:0 0 20px;font-size:15px;color:#5e4229;">
@@ -281,7 +351,7 @@ function reminderHtml(data) {
 
 // ── 3. Születésnapi email (50% kedvezmény email felmutatással) ──
 function birthdayHtml({ userName }) {
-  const firstName = (userName || 'Kedves').split(' ').slice(-1)[0];
+  const firstName = htmlEscape((userName || 'Kedves').split(' ').slice(-1)[0]);
   return emailWrapper(`
     <p style="margin:0 0 8px;font-size:28px;text-align:center;">🎂</p>
     <p style="margin:0 0 16px;font-size:16px;color:#3f2b17;">Kedves <strong>${firstName}</strong>!</p>
@@ -315,6 +385,210 @@ function birthdayHtml({ userName }) {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  SECURE CLIENT OPERATIONS
+//  Foglalas/lemondas csak szerveroldali tranzakcioban tortenik.
+// ═══════════════════════════════════════════════════════════
+exports.createBooking = onCall({ region: REGION }, async (request) => {
+  const uid = requireAuth(request, { verified: true });
+  const classId = requireString(request.data?.classId, 'classId');
+  const userRef = db.collection('users').doc(uid);
+  const classRef = db.collection('classes').doc(classId);
+  const existingQuery = db.collection('bookings')
+    .where('userId', '==', uid)
+    .where('classId', '==', classId)
+    .limit(1);
+
+  return db.runTransaction(async (transaction) => {
+    const [userSnap, classSnap, existingSnap] = await Promise.all([
+      transaction.get(userRef),
+      transaction.get(classRef),
+      transaction.get(existingQuery)
+    ]);
+
+    if (!classSnap.exists) {
+      throw new HttpsError('not-found', 'Az óra nem található.');
+    }
+    if (!existingSnap.empty) {
+      throw new HttpsError('already-exists', 'Már foglaltál erre az órára.');
+    }
+
+    const cls = classSnap.data();
+    const classStartDate = getClassStartDate(cls);
+    if (cls.archived === true || Number.isNaN(classStartDate.getTime()) || classStartDate <= new Date()) {
+      throw new HttpsError('failed-precondition', 'Erre az órára már nem lehet foglalni.');
+    }
+
+    const current = Number(cls.currentBookings) || 0;
+    const max = Number(cls.maxCapacity) || 0;
+    if (current >= max) {
+      throw new HttpsError('resource-exhausted', 'Az óra már betelt.');
+    }
+
+    const profile = userSnap.exists ? userSnap.data() : {
+      name: sanitizeDisplayName(request.auth.token.name),
+      email: request.auth.token.email || '',
+      role: 'user',
+      createdAt: new Date().toISOString()
+    };
+    if (!userSnap.exists) {
+      transaction.set(userRef, profile);
+    }
+
+    const bookingRef = db.collection('bookings').doc();
+    transaction.set(bookingRef, {
+      userId: uid,
+      userName: sanitizeDisplayName(profile.name),
+      userEmail: request.auth.token.email || profile.email || '',
+      classId,
+      classTitle: cls.title || '',
+      classDate: cls.date || '',
+      classStartTime: cls.startTime || '',
+      classDuration: Number(cls.duration) || 60,
+      classLocation: cls.location || '',
+      instructorName: cls.instructorName || '',
+      classDescription: cls.description || '',
+      classStartTimestamp: admin.firestore.Timestamp.fromDate(classStartDate),
+      calendarEventId: null,
+      reminderSent: false,
+      bookedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    transaction.update(classRef, { currentBookings: current + 1 });
+
+    return { bookingId: bookingRef.id };
+  });
+});
+
+exports.createAdminBooking = onCall({ region: REGION }, async (request) => {
+  const adminUid = requireAuth(request, { verified: true });
+  if (!(await isAdminUser(adminUid))) {
+    throw new HttpsError('permission-denied', 'Admin jogosultság szükséges.');
+  }
+
+  const targetUserId = requireString(request.data?.targetUserId, 'targetUserId');
+  const classId = requireString(request.data?.classId, 'classId');
+  const targetUserRef = db.collection('users').doc(targetUserId);
+  const classRef = db.collection('classes').doc(classId);
+  const existingQuery = db.collection('bookings')
+    .where('userId', '==', targetUserId)
+    .where('classId', '==', classId)
+    .limit(1);
+
+  return db.runTransaction(async (transaction) => {
+    const [targetUserSnap, classSnap, existingSnap] = await Promise.all([
+      transaction.get(targetUserRef),
+      transaction.get(classRef),
+      transaction.get(existingQuery)
+    ]);
+
+    if (!targetUserSnap.exists) {
+      throw new HttpsError('not-found', 'A felhasználó nem található.');
+    }
+    if (!classSnap.exists) {
+      throw new HttpsError('not-found', 'Az óra nem található.');
+    }
+    if (!existingSnap.empty) {
+      throw new HttpsError('already-exists', 'A felhasználónak már van foglalása erre az órára.');
+    }
+
+    const cls = classSnap.data();
+    const current = Number(cls.currentBookings) || 0;
+    const max = Number(cls.maxCapacity) || 0;
+    if (current >= max) {
+      throw new HttpsError('resource-exhausted', 'Az óra már betelt.');
+    }
+
+    const targetUser = targetUserSnap.data();
+    const classStartDate = getClassStartDate(cls);
+    if (Number.isNaN(classStartDate.getTime())) {
+      throw new HttpsError('failed-precondition', 'Az óra időpontja hibás.');
+    }
+    const bookingRef = db.collection('bookings').doc();
+    transaction.set(bookingRef, {
+      userId: targetUserId,
+      userName: sanitizeDisplayName(targetUser.name),
+      userEmail: targetUser.email || '',
+      classId,
+      classTitle: cls.title || '',
+      classDate: cls.date || '',
+      classStartTime: cls.startTime || '',
+      classDuration: Number(cls.duration) || 60,
+      classLocation: cls.location || '',
+      instructorName: cls.instructorName || '',
+      classDescription: cls.description || '',
+      classStartTimestamp: admin.firestore.Timestamp.fromDate(classStartDate),
+      calendarEventId: null,
+      reminderSent: false,
+      bookedAt: admin.firestore.FieldValue.serverTimestamp(),
+      bookedByAdmin: true
+    });
+    transaction.update(classRef, { currentBookings: current + 1 });
+
+    return { bookingId: bookingRef.id };
+  });
+});
+
+exports.cancelBooking = onCall({ region: REGION }, async (request) => {
+  const uid = requireAuth(request, { verified: true });
+  const bookingId = requireString(request.data?.bookingId, 'bookingId');
+  const actorIsAdmin = await isAdminUser(uid);
+  const bookingRef = db.collection('bookings').doc(bookingId);
+
+  return db.runTransaction(async (transaction) => {
+    const bookingSnap = await transaction.get(bookingRef);
+    if (!bookingSnap.exists) {
+      throw new HttpsError('not-found', 'A foglalás nem található.');
+    }
+
+    const booking = bookingSnap.data();
+    if (!actorIsAdmin && booking.userId !== uid) {
+      throw new HttpsError('permission-denied', 'Ehhez a foglaláshoz nincs jogosultságod.');
+    }
+    if (!actorIsAdmin && !canCancelBookingData(booking)) {
+      throw new HttpsError('failed-precondition', 'A foglalás már nem mondható le online.');
+    }
+
+    const classRef = db.collection('classes').doc(booking.classId);
+    const classSnap = await transaction.get(classRef);
+    transaction.delete(bookingRef);
+    if (classSnap.exists) {
+      const current = Number(classSnap.data().currentBookings) || 0;
+      transaction.update(classRef, { currentBookings: Math.max(0, current - 1) });
+    }
+
+    return { cancelled: true };
+  });
+});
+
+exports.deleteOwnAccountData = onCall({ region: REGION }, async (request) => {
+  const uid = requireAuth(request);
+  const bookingsQuery = db.collection('bookings').where('userId', '==', uid);
+  const waitlistQuery = db.collection('waitlist').where('userId', '==', uid);
+  const userRef = db.collection('users').doc(uid);
+
+  return db.runTransaction(async (transaction) => {
+    const [bookingsSnap, waitlistSnap] = await Promise.all([
+      transaction.get(bookingsQuery),
+      transaction.get(waitlistQuery)
+    ]);
+
+    for (const bookingDoc of bookingsSnap.docs) {
+      const booking = bookingDoc.data();
+      const classRef = db.collection('classes').doc(booking.classId);
+      const classSnap = await transaction.get(classRef);
+      transaction.delete(bookingDoc.ref);
+      if (classSnap.exists) {
+        const current = Number(classSnap.data().currentBookings) || 0;
+        transaction.update(classRef, { currentBookings: Math.max(0, current - 1) });
+      }
+    }
+
+    waitlistSnap.docs.forEach((docSnap) => transaction.delete(docSnap.ref));
+    transaction.delete(userRef);
+    return { deletedBookings: bookingsSnap.size, deletedWaitlistEntries: waitlistSnap.size };
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
 //  1. FOGLALÁS VISSZAIGAZOLÁS
 //     Firestore trigger: új /bookings/{id} dokumentum létrejön
 // ═══════════════════════════════════════════════════════════
@@ -337,7 +611,7 @@ exports.onBookingCreated = onDocumentCreated(
       await sendEmail({
         apiKey:   RESEND_API_KEY.value(),
         to:       userEmail,
-        subject:  `Foglalás visszaigazolva – ${classTitle} (${dateStr} ${classStartTime})`,
+        subject:  `Foglalás visszaigazolva – ${singleLineText(classTitle)} (${dateStr} ${singleLineText(classStartTime)})`,
         html:     bookingConfirmationHtml({ userName, classTitle, classDate, dateStr, classStartTime, classDuration, classLocation, instructorName }),
         attachments: [{
           filename: 'Balance-Studio-foglalás.ics',
@@ -353,7 +627,7 @@ exports.onBookingCreated = onDocumentCreated(
       await sendEmail({
         apiKey:   RESEND_API_KEY.value(),
         to:       ADMIN_EMAIL,
-        subject:  `Új foglalás: ${userName} – ${classTitle} (${dateStr})`,
+        subject:  `Új foglalás: ${singleLineText(userName)} – ${singleLineText(classTitle)} (${dateStr})`,
         html:     adminBookingNotificationHtml({ ...data, dateStr })
       });
       console.log(`Booking admin notification sent to ${ADMIN_EMAIL}`);
@@ -383,7 +657,7 @@ exports.onBookingDeleted = onDocumentDeleted(
       await sendEmail({
         apiKey:   RESEND_API_KEY.value(),
         to:       userEmail,
-        subject:  `Foglalás lemondva – ${classTitle} (${dateStr})`,
+        subject:  `Foglalás lemondva – ${singleLineText(classTitle)} (${dateStr})`,
         html:     cancellationHtml({ userName, classTitle, classDate, dateStr, classStartTime, classDuration, classLocation, instructorName })
       });
       console.log(`Cancellation confirmation sent to ${userEmail}`);
@@ -395,7 +669,7 @@ exports.onBookingDeleted = onDocumentDeleted(
       await sendEmail({
         apiKey:   RESEND_API_KEY.value(),
         to:       ADMIN_EMAIL,
-        subject:  `Lemondás: ${userName} – ${classTitle} (${dateStr})`,
+        subject:  `Lemondás: ${singleLineText(userName)} – ${singleLineText(classTitle)} (${dateStr})`,
         html:     adminBookingNotificationHtml({ ...data, dateStr }, true)
       });
       console.log(`Cancellation admin notification sent to ${ADMIN_EMAIL}`);
@@ -434,7 +708,7 @@ exports.sendDailyReminders = onSchedule(
         await sendEmail({
           apiKey:  RESEND_API_KEY.value(),
           to:      d.userEmail,
-          subject: `Emlékeztető – holnap ${d.classStartTime}: ${d.classTitle}`,
+          subject: `Emlékeztető – holnap ${singleLineText(d.classStartTime)}: ${singleLineText(d.classTitle)}`,
           html:    reminderHtml({
             userName:       d.userName,
             classTitle:     d.classTitle,

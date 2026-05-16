@@ -6,7 +6,7 @@
   <meta name="description" content="Balance Studio – Foglalásaim és várólistáim kezelése." />
   <meta name="robots" content="noindex, nofollow" />
   <title>Foglalásaim – Balance Studio</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
   <link rel="stylesheet" href="css/style.css" />
   <script src="js/theme.js"></script>
   <link rel="manifest" href="manifest.json" />
@@ -75,7 +75,7 @@
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIds1K1eN7N6jIeHz" crossorigin="anonymous"></script>
   <script type="module">
     import { initNavbar, requireAuth, showToast, showLoading, showConfirm, formatDate, escapeHtml } from './js/ui.js';
     import { getUserProfile } from './js/auth.js';
@@ -93,6 +93,13 @@
     initNavbar();
 
     // ── iCal (.ics) client-side builder ────────────────────────
+    function escapeICSText(value = '') {
+      return String(value)
+        .replace(/\\/g, '\\\\')
+        .replace(/\r?\n/g, '\\n')
+        .replace(/([;,])/g, '\\$1');
+    }
+
     function buildICS(b) {
       const [year, month, day] = b.classDate.split('-').map(Number);
       const [sh, sm] = (b.classStartTime || '09:00').split(':').map(Number);
@@ -106,9 +113,9 @@
         'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Balance Studio//HU','CALSCALE:GREGORIAN','METHOD:REQUEST',
         'BEGIN:VEVENT',`UID:${uid}`,
         `DTSTART;TZID=Europe/Budapest:${startDt}`,`DTEND;TZID=Europe/Budapest:${endDt}`,
-        `SUMMARY:${b.classTitle} \u2013 Balance Studio`,
-        `DESCRIPTION:Pilates \u00f3ra \u2013 Balance Studio${b.instructorName ? ` (Oktat\u00f3: ${b.instructorName})` : ''}`,
-        b.classLocation ? `LOCATION:${b.classLocation}` : '',
+        `SUMMARY:${escapeICSText(b.classTitle)} \u2013 Balance Studio`,
+        `DESCRIPTION:${escapeICSText(`Pilates \u00f3ra \u2013 Balance Studio${b.instructorName ? ` (Oktat\u00f3: ${b.instructorName})` : ''}`)}`,
+        b.classLocation ? `LOCATION:${escapeICSText(b.classLocation)}` : '',
         'URL:https://balance-studio.hu/bookings.html','STATUS:CONFIRMED',
         'END:VEVENT','END:VCALENDAR'
       ].filter(Boolean).join('\r\n');
@@ -209,14 +216,14 @@
                   ${!hasCalEvent
                     ? isGoogleCalendarAPIConfigured()
                       ? `<button type="button" class="gcal-sync-btn btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
-                                 data-booking-id="${b.id}"
-                                 data-class-title="${b.classTitle}"
-                                 data-class-date="${b.classDate}"
-                                 data-class-time="${b.classStartTime}"
-                                 data-class-duration="${b.classDuration || 60}"
-                                 data-class-location="${b.classLocation || ''}"
-                                 data-instructor="${b.instructorName || ''}"
-                                 data-description="${b.classDescription || ''}"
+                                 data-booking-id="${escapeHtml(b.id)}"
+                                 data-class-title="${escapeHtml(b.classTitle)}"
+                                 data-class-date="${escapeHtml(b.classDate)}"
+                                 data-class-time="${escapeHtml(b.classStartTime)}"
+                                 data-class-duration="${escapeHtml(String(b.classDuration || 60))}"
+                                 data-class-location="${escapeHtml(b.classLocation || '')}"
+                                 data-instructor="${escapeHtml(b.instructorName || '')}"
+                                 data-description="${escapeHtml(b.classDescription || '')}"
                                  title="Szinkronizálás a Google Naptárral">
                           ${calIcon} Naptár
                         </button>`
@@ -229,16 +236,16 @@
                   }
                   <button type="button" class="ical-btn btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
                           data-class-title="${escapeHtml(b.classTitle)}"
-                          data-class-date="${b.classDate}"
-                          data-class-time="${b.classStartTime || '09:00'}"
-                          data-class-duration="${b.classDuration || 60}"
+                          data-class-date="${escapeHtml(b.classDate)}"
+                          data-class-time="${escapeHtml(b.classStartTime || '09:00')}"
+                          data-class-duration="${escapeHtml(String(b.classDuration || 60))}"
                           data-class-location="${escapeHtml(b.classLocation || '')}"
                           data-instructor="${escapeHtml(b.instructorName || '')}"
                           title="iCal f\u00e1jl let\u00f6lt\u00e9se (.ics)">
                     ${calIcon} .ics
                   </button>
                   <button type="button" class="cancel-booking-btn btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
-                          data-booking-id="${b.id}" data-class-id="${b.classId}" ${!canCancel ? 'disabled' : ''}>
+                          data-booking-id="${escapeHtml(b.id)}" data-class-id="${escapeHtml(b.classId)}" ${!canCancel ? 'disabled' : ''}>
                     <svg class="flex-shrink-0" style="width:1rem;height:1rem" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -302,7 +309,7 @@
           btn.textContent = 'Lemondás...';
 
           try {
-            await cancelBooking(btn.dataset.bookingId, btn.dataset.classId);
+            await cancelBooking(btn.dataset.bookingId);
             showToast('Foglalás sikeresen lemondva.', 'info');
             const user = (await import('./js/firebase-config.js')).auth.currentUser;
             loadBookings(user.uid);

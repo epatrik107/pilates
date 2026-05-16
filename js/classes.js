@@ -1,6 +1,6 @@
 import {
-  collection, doc, addDoc, updateDoc, deleteDoc, setDoc,
-  getDocs, getDoc, query, where, orderBy, serverTimestamp, increment
+  collection, doc, addDoc, updateDoc, setDoc,
+  getDocs, getDoc, query, where, orderBy, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 import { db } from './firebase-config.js';
 
@@ -114,12 +114,6 @@ export async function getAllClasses(includeArchived = false) {
 export async function getClassById(classId) {
   const snap = await getDoc(doc(db, 'classes', classId));
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
-}
-
-// ── Increment booking count ─────────────────────────────────
-export async function incrementBookings(classId, delta) {
-  const ref = doc(db, 'classes', classId);
-  await updateDoc(ref, { currentBookings: increment(delta) });
 }
 
 // ── Clone a week of classes (+7 days) ───────────────────────

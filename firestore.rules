@@ -3,7 +3,6 @@ rules_version = '2';
 // ═══════════════════════════════════════════════════════════
 // App Check ENFORCEMENT must be enabled in Firebase Console:
 // Firebase Console → App Check → Apps → Enforce (Firestore + Auth)
-// Without enforcement, bots can bypass these rules entirely.
 // ═══════════════════════════════════════════════════════════
 
 service cloud.firestore {
@@ -11,6 +10,10 @@ service cloud.firestore {
 
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
     }
 
     function isOwner(userId) {
@@ -23,27 +26,82 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Server-side capacity guard – prevents bookings on full classes
-    // even if a malicious client bypasses the UI/transaction logic.
-    function classHasCapacity(classId) {
-      let cls = get(/databases/$(database)/documents/classes/$(classId));
-      return cls != null && cls.data.currentBookings < cls.data.maxCapacity;
+    function validName(data) {
+      return data.name is string
+        && data.name.size() >= 1
+        && data.name.size() <= 100;
+    }
+
+    function validBirthdayFields(data) {
+      return (
+        (!('birthdayDate' in data) && !('birthdayMonthDay' in data))
+        || (data.birthdayDate == null && data.birthdayMonthDay == null)
+        || (
+          data.birthdayDate is string
+          && data.birthdayDate.matches('^\\d{4}-\\d{2}-\\d{2}$')
+          && data.birthdayMonthDay is string
+          && data.birthdayMonthDay.matches('^\\d{2}-\\d{2}$')
+        )
+      );
+    }
+
+    function userChangedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    function validEmailUpdate() {
+      return !userChangedKeys().hasAny(['email'])
+        || (
+          request.auth.token.email_verified == true
+          && request.resource.data.email == request.auth.token.email
+        );
+    }
+
+    function validBirthdayUpdate() {
+      return !userChangedKeys().hasAny(['birthdayDate', 'birthdayMonthDay'])
+        || (
+          (!('birthdayDate' in resource.data) || resource.data.birthdayDate == null)
+          && request.resource.data.birthdayDate is string
+          && request.resource.data.birthdayDate.matches('^\\d{4}-\\d{2}-\\d{2}$')
+          && request.resource.data.birthdayMonthDay is string
+          && request.resource.data.birthdayMonthDay.matches('^\\d{2}-\\d{2}$')
+        );
+    }
+
+    function validPhotoUpdate() {
+      return !userChangedKeys().hasAny(['photoURL'])
+        || (
+          request.resource.data.photoURL is string
+          && request.resource.data.photoURL.size() <= 700000
+        );
     }
 
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
       allow create: if isOwner(userId)
+        && request.resource.data.keys().hasOnly([
+          'name', 'email', 'role', 'createdAt', 'birthdayDate', 'birthdayMonthDay', 'photoURL'
+        ])
+        && request.resource.data.keys().hasAll(['name', 'email', 'role', 'createdAt'])
         && request.resource.data.role == 'user'
-        && request.resource.data.name is string
-        && request.resource.data.name.size() >= 1
-        && request.resource.data.name.size() <= 100
+        && validName(request.resource.data)
         && request.resource.data.email is string
-        && request.resource.data.keys().hasAll(['name', 'email', 'role']);
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.createdAt is string
+        && validBirthdayFields(request.resource.data)
+        && (
+          !('photoURL' in request.resource.data)
+          || request.resource.data.photoURL is string
+        );
       allow update: if isOwner(userId)
         && request.resource.data.role == resource.data.role
-        && request.resource.data.name is string
-        && request.resource.data.name.size() <= 100;
+        && request.resource.data.name == resource.data.name
+        && request.resource.data.createdAt == resource.data.createdAt
+        && userChangedKeys().hasOnly(['email', 'birthdayDate', 'birthdayMonthDay', 'photoURL'])
+        && validEmailUpdate()
+        && validBirthdayUpdate()
+        && validPhotoUpdate();
       allow delete: if isOwner(userId);
     }
 
@@ -54,67 +112,42 @@ service cloud.firestore {
 
     match /classes/{classId} {
       allow read: if true;
-      allow create, delete: if isAdmin();
-      allow update: if isAdmin()
-        || (
-          isSignedIn()
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentBookings'])
-          && request.resource.data.currentBookings is int
-          && request.resource.data.currentBookings >= 0
-          && request.resource.data.currentBookings <= resource.data.maxCapacity
-        );
-    }
-
-    // 24-hour cancellation policy – server-side enforcement
-    function canUserCancelBooking() {
-      // Backward compat: bookings without classStartTimestamp are unrestricted
-      return !('classStartTimestamp' in resource.data)
-        // More than 24 hours before class start
-        || request.time < (resource.data.classStartTimestamp - duration.value(24, 'h'))
-        // Grace period: within 5 minutes of booking creation
-        || ('bookedAt' in resource.data && resource.data.bookedAt != null
-            && request.time < (resource.data.bookedAt + duration.value(5, 'm')));
+      allow create, update, delete: if isAdmin();
     }
 
     match /bookings/{bookingId} {
       allow read: if isSignedIn()
         && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn()
-        && (
-          // Normal user booking
-          (
-            request.resource.data.userId == request.auth.uid
-            && request.resource.data.userName is string
-            && request.resource.data.userName.size() <= 100
-            && request.resource.data.userEmail is string
-          )
-          // Admin booking on behalf of a user
-          || isAdmin()
-        )
-        && request.resource.data.classId is string
-        && request.resource.data.classTitle is string
-        && request.resource.data.classDate is string
-        && request.resource.data.keys().hasAll(['userId', 'classId', 'userName', 'userEmail', 'classTitle', 'classDate'])
-        && classHasCapacity(request.resource.data.classId);
+      allow create, delete: if false;
       allow update: if isSignedIn()
         && (
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['calendarEventId'])
-          || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attended']))
-        );
-      allow delete: if isSignedIn()
-        && (
-          isAdmin()
-          || (resource.data.userId == request.auth.uid && canUserCancelBooking())
+          (
+            resource.data.userId == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['calendarEventId'])
+            && request.resource.data.calendarEventId is string
+            && request.resource.data.calendarEventId.size() <= 512
+          )
+          || (
+            isAdmin()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attended'])
+            && request.resource.data.attended is bool
+          )
         );
     }
 
     match /waitlist/{waitlistId} {
       allow read: if isSignedIn()
         && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn()
+      allow create: if isVerifiedUser()
+        && request.resource.data.keys().hasOnly([
+          'userId', 'userName', 'userEmail', 'classId', 'classTitle', 'classDate', 'addedAt'
+        ])
         && request.resource.data.userId == request.auth.uid
-        && request.resource.data.classId is string
+        && request.resource.data.userEmail == request.auth.token.email
         && request.resource.data.userName is string
+        && request.resource.data.userName.size() <= 100
+        && request.resource.data.classId is string
+        && request.resource.data.classTitle is string
         && request.resource.data.classDate is string;
       allow delete: if isSignedIn()
         && (resource.data.userId == request.auth.uid || isAdmin());

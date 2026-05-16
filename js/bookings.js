@@ -1,68 +1,21 @@
 import {
-  collection, addDoc, getDocs, getDoc, deleteDoc, updateDoc, doc,
-  query, where, orderBy, serverTimestamp, runTransaction, Timestamp
+  collection, getDocs, getDoc, updateDoc, doc,
+  query, where, orderBy
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
-import { db } from './firebase-config.js';
+import { db, functions, httpsCallable } from './firebase-config.js';
 import { removeEventFromGoogleCalendar, isGoogleCalendarAPIConfigured } from './google-calendar.js';
 
 const bookingsRef = collection(db, 'bookings');
 
 // ═══════════════════════════════════════════════════════════
-//  CREATE BOOKING – Using Firestore Transaction
-//  The transaction ensures that the capacity check and the
-//  booking creation are ATOMIC. This prevents two concurrent
-//  bookings from causing overbooking (race condition guard).
+//  CREATE BOOKING
+//  Capacity checks and writes run in a callable Cloud Function,
+//  so the browser never updates booking counters directly.
 // ═══════════════════════════════════════════════════════════
 export async function bookClass(user, classData) {
-  const existing = await getUserBookingForClass(user.uid, classData.id);
-  if (existing) {
-    throw new Error('Már foglaltál erre az órára!');
-  }
-
-  const classRef = doc(db, 'classes', classData.id);
-  const classStartDate = new Date(`${classData.date}T${classData.startTime || '00:00'}:00`);
-
-  const newBookingRef = await runTransaction(db, async (transaction) => {
-    const classSnap = await transaction.get(classRef);
-    if (!classSnap.exists()) {
-      throw new Error('Az óra nem létezik vagy törölve lett!');
-    }
-
-    const current = classSnap.data().currentBookings || 0;
-    const max     = classSnap.data().maxCapacity || 0;
-
-    if (current >= max) {
-      throw new Error('Az óra már betelt!');
-    }
-
-    const bookingRef = doc(collection(db, 'bookings'));
-
-    transaction.set(bookingRef, {
-      userId:           user.uid,
-      userName:         user.displayName || 'Névtelen',
-      userEmail:        user.email,
-      classId:          classData.id,
-      classTitle:       classData.title,
-      classDate:        classData.date,
-      classStartTime:   classData.startTime,
-      classDuration:    parseInt(classData.duration) || 60,
-      classLocation:    classData.location || '',
-      instructorName:   classData.instructorName || '',
-      classDescription: classData.description || '',
-      classStartTimestamp: Timestamp.fromDate(classStartDate),
-      calendarEventId:  null,
-      reminderSent:     false,
-      bookedAt:         serverTimestamp()
-    });
-
-    transaction.update(classRef, {
-      currentBookings: current + 1
-    });
-
-    return bookingRef;
-  });
-
-  return newBookingRef;
+  if (!user?.uid || !classData?.id) throw new Error('Hiányzó foglalási adat.');
+  const createBooking = httpsCallable(functions, 'createBooking');
+  return createBooking({ classId: classData.id });
 }
 
 // ── Save Google Calendar event ID to a booking ──────────────
@@ -72,11 +25,11 @@ export async function saveCalendarEventId(bookingId, calendarEventId) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  CANCEL BOOKING – Using Firestore Transaction
-//  Atomic deletion + counter decrement to prevent
-//  inconsistent state between the booking and the counter.
+//  CANCEL BOOKING
+//  Google Calendar cleanup stays client-side; the booking delete
+//  and counter decrement run server-side in one transaction.
 // ═══════════════════════════════════════════════════════════
-export async function cancelBooking(bookingId, classId) {
+export async function cancelBooking(bookingId) {
   if (isGoogleCalendarAPIConfigured()) {
     try {
       const snap = await getDoc(doc(db, 'bookings', bookingId));
@@ -91,21 +44,8 @@ export async function cancelBooking(bookingId, classId) {
     }
   }
 
-  const bookingRef = doc(db, 'bookings', bookingId);
-  const classRef   = doc(db, 'classes', classId);
-
-  await runTransaction(db, async (transaction) => {
-    const classSnap = await transaction.get(classRef);
-
-    transaction.delete(bookingRef);
-
-    if (classSnap.exists()) {
-      const current = classSnap.data().currentBookings || 0;
-      transaction.update(classRef, {
-        currentBookings: Math.max(0, current - 1)
-      });
-    }
-  });
+  const cancelBookingCallable = httpsCallable(functions, 'cancelBooking');
+  await cancelBookingCallable({ bookingId });
 }
 
 // ── Get a single booking ────────────────────────────────────
@@ -175,40 +115,7 @@ export async function getAllBookings() {
 //  ADMIN BOOKING – Book a class on behalf of a user
 // ═══════════════════════════════════════════════════════════
 export async function adminBookClass(targetUser, classData) {
-  const classRef = doc(db, 'classes', classData.id);
-  const classStartDate = new Date(`${classData.date}T${classData.startTime || '00:00'}:00`);
-
-  const newBookingRef = await runTransaction(db, async (transaction) => {
-    const classSnap = await transaction.get(classRef);
-    if (!classSnap.exists()) throw new Error('Az óra nem létezik!');
-
-    const current = classSnap.data().currentBookings || 0;
-    const max     = classSnap.data().maxCapacity || 0;
-    if (current >= max) throw new Error('Az óra már betelt!');
-
-    const bookingRef = doc(collection(db, 'bookings'));
-
-    transaction.set(bookingRef, {
-      userId:              targetUser.uid,
-      userName:            targetUser.name || 'Névtelen',
-      userEmail:           targetUser.email || '',
-      classId:             classData.id,
-      classTitle:          classData.title,
-      classDate:           classData.date,
-      classStartTime:      classData.startTime,
-      classDuration:       parseInt(classData.duration) || 60,
-      classLocation:       classData.location || '',
-      instructorName:      classData.instructorName || '',
-      classDescription:    classData.description || '',
-      classStartTimestamp: Timestamp.fromDate(classStartDate),
-      calendarEventId:     null,
-      bookedAt:            serverTimestamp(),
-      bookedByAdmin:       true
-    });
-
-    transaction.update(classRef, { currentBookings: current + 1 });
-    return bookingRef;
-  });
-
-  return newBookingRef;
+  if (!targetUser?.uid || !classData?.id) throw new Error('Hiányzó admin foglalási adat.');
+  const createAdminBooking = httpsCallable(functions, 'createAdminBooking');
+  return createAdminBooking({ targetUserId: targetUser.uid, classId: classData.id });
 }

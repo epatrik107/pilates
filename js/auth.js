@@ -16,10 +16,10 @@ import {
   linkWithCredential
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
 import {
-  doc, setDoc, getDoc, deleteDoc, updateDoc,
-  collection, query, where, orderBy, getDocs, runTransaction
+  doc, setDoc, getDoc, updateDoc,
+  collection, query, orderBy, getDocs
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
-import { auth, db } from './firebase-config.js';
+import { auth, db, functions, httpsCallable } from './firebase-config.js';
 
 // Wraps any promise with a timeout to prevent Firestore hangs
 function withTimeout(promise, ms = 6000) {
@@ -31,9 +31,8 @@ function withTimeout(promise, ms = 6000) {
 
 // ── Input sanitization ──────────────────────────────────────
 function sanitizeName(name) {
-  return name
+  return String(name || '')
     .replace(/[<>]/g, '')
-    .replace(/&/g, '&amp;')
     .trim()
     .slice(0, 100);
 }
@@ -46,10 +45,18 @@ export async function ensureUserProfile(user) {
   try {
     const ref = doc(db, 'users', user.uid);
     const snap = await withTimeout(getDoc(ref));
-    if (snap.exists()) return snap.data();
+    if (snap.exists()) {
+      const profile = snap.data();
+      if (user.emailVerified && user.email && profile.email !== user.email) {
+        withTimeout(updateDoc(ref, { email: user.email }))
+          .catch(e => console.warn('ensureUserProfile email sync:', e));
+        return { ...profile, email: user.email };
+      }
+      return profile;
+    }
 
     const profile = {
-      name: user.displayName || 'Felhasználó',
+      name: sanitizeName(user.displayName || 'Felhasználó'),
       email: user.email || '',
       role: 'user',
       createdAt: new Date().toISOString()
@@ -58,7 +65,7 @@ export async function ensureUserProfile(user) {
     return profile;
   } catch (err) {
     console.warn('ensureUserProfile timeout/error:', err.message);
-    return { name: user.displayName || 'Felhasználó', email: user.email || '', role: 'user' };
+    return { name: sanitizeName(user.displayName || 'Felhasználó'), email: user.email || '', role: 'user' };
   }
 }
 
@@ -120,7 +127,6 @@ export async function changeEmail(newEmail) {
   const user = auth.currentUser;
   if (!user) throw new Error('Nincs bejelentkezve.');
   await verifyBeforeUpdateEmail(user, newEmail);
-  await updateDoc(doc(db, 'users', user.uid), { email: newEmail });
 }
 
 // ── Birthday save ────────────────────────────────────────────
@@ -144,7 +150,7 @@ async function ensureGoogleProfile(user) {
   const snap = await getDoc(ref).catch(() => null);
   if (!snap || !snap.exists()) {
     await setDoc(ref, {
-      name: user.displayName || 'Felhasználó',
+      name: sanitizeName(user.displayName || 'Felhasználó'),
       email: user.email || '',
       role: 'user',
       createdAt: new Date().toISOString()
@@ -237,27 +243,7 @@ export async function getAllUsers() {
 // 2) Delete profile document
 // 3) Delete Firebase Auth account
 export async function deleteAccount(user) {
-  const uid = user.uid;
-
-  const bookingsSnap = await getDocs(
-    query(collection(db, 'bookings'), where('userId', '==', uid))
-  );
-
-  for (const bookingDoc of bookingsSnap.docs) {
-    const data = bookingDoc.data();
-    const classRef = doc(db, 'classes', data.classId);
-    const bookingRef = doc(db, 'bookings', bookingDoc.id);
-
-    await runTransaction(db, async (transaction) => {
-      const classSnap = await transaction.get(classRef);
-      transaction.delete(bookingRef);
-      if (classSnap.exists()) {
-        const current = classSnap.data().currentBookings || 0;
-        transaction.update(classRef, { currentBookings: Math.max(0, current - 1) });
-      }
-    });
-  }
-
-  await deleteDoc(doc(db, 'users', uid));
+  const deleteOwnAccountData = httpsCallable(functions, 'deleteOwnAccountData');
+  await deleteOwnAccountData();
   await deleteUser(user);
 }

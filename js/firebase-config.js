@@ -1,6 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
 import { initializeFirestore } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
+import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-functions.js';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app-check.js';
 
 // ============================================================
@@ -75,5 +76,6 @@ const auth = getAuth(app);
 const db   = initializeFirestore(app, {
   experimentalForceLongPolling: true,
 });
+const functions = getFunctions(app, 'europe-west1');
 
-export { app, auth, db, onAuthStateChanged, googleCalendarConfig, appCheckConfig };
+export { app, auth, db, functions, httpsCallable, onAuthStateChanged, googleCalendarConfig, appCheckConfig };

@@ -16,7 +16,8 @@ function downloadCSV(csvContent, filename) {
 
 function escapeCSV(val) {
   if (val == null) return '';
-  const str = String(val);
+  let str = String(val);
+  if (/^[=+\-@]/.test(str)) str = "'" + str;
   if (str.includes(',') || str.includes('"') || str.includes('\n')) {
     return '"' + str.replace(/"/g, '""') + '"';
   }
