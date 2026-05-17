@@ -23,6 +23,32 @@ function appendThemeToggle(navRight) {
   li.querySelector('#theme-toggle').addEventListener('click', toggleTheme);
 }
 
+function initNavbarToggleFallback() {
+  const toggler = document.querySelector('.navbar-toggler[data-bs-target]');
+  if (!toggler || toggler.dataset.navbarToggleBound === 'true') return;
+
+  const targetSelector = toggler.getAttribute('data-bs-target');
+  const collapse = targetSelector ? document.querySelector(targetSelector) : null;
+  if (!collapse) return;
+
+  toggler.dataset.navbarToggleBound = 'true';
+  toggler.setAttribute('aria-controls', collapse.id);
+  toggler.setAttribute('aria-label', 'Men\u00fc megnyit\u00e1sa');
+  toggler.setAttribute('aria-expanded', collapse.classList.contains('show') ? 'true' : 'false');
+
+  if (window.bootstrap?.Collapse) {
+    collapse.addEventListener('shown.bs.collapse', () => toggler.setAttribute('aria-expanded', 'true'));
+    collapse.addEventListener('hidden.bs.collapse', () => toggler.setAttribute('aria-expanded', 'false'));
+    return;
+  }
+
+  toggler.addEventListener('click', () => {
+    const shouldShow = !collapse.classList.contains('show');
+    collapse.classList.toggle('show', shouldShow);
+    toggler.setAttribute('aria-expanded', shouldShow ? 'true' : 'false');
+  });
+}
+
 // ── XSS protection: HTML escape ─────────────────────────────
 export function escapeHtml(str) {
   if (typeof str !== 'string') return '';
@@ -134,6 +160,7 @@ export function showLoading(container) {
 // ── Navbar initialization (Bootstrap) ───────────────────────
 export function initNavbar() {
   initCookieConsent();
+  initNavbarToggleFallback();
 
   const navLinks = document.getElementById('nav-links');
   const navRight = document.getElementById('nav-right');
