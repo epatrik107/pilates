@@ -41,3 +41,7 @@ firebase-debug.log
 # - SendGrid API Key
 # - Any server-side secret key
 # If you need these, store them in Cloud Functions, NOT in the frontend!
+
+# Firestore local backup
+backups/
+scripts/serviceAccountKey.json

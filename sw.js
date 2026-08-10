@@ -1,4 +1,4 @@
-const CACHE_NAME = 'balance-v16';
+const CACHE_NAME = 'balance-v17';
 const STATIC_ASSETS = [
   'index.html',
   'about.html',
@@ -17,6 +17,7 @@ const STATIC_ASSETS = [
   'js/classes.js',
   'js/ui.js',
   'js/waitlist.js',
+  'js/passes.js',
   'js/export.js',
   'js/google-calendar.js',
   'img/szonja.png',

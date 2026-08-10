@@ -76,6 +76,22 @@ service cloud.firestore {
         );
     }
 
+    // Bérlet (pass) dokumentum validálása – csak admin írhatja
+    function validPassData(data) {
+      return data.keys().hasOnly([
+          'totalSessions', 'remainingSessions', 'note', 'status', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasAll(['totalSessions', 'remainingSessions', 'status', 'createdAt'])
+        && data.totalSessions is int
+        && data.totalSessions >= 1
+        && data.totalSessions <= 1000
+        && data.remainingSessions is int
+        && data.remainingSessions >= 0
+        && data.remainingSessions <= data.totalSessions
+        && data.status in ['active', 'used']
+        && (!('note' in data) || (data.note is string && data.note.size() <= 200));
+    }
+
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
@@ -103,6 +119,14 @@ service cloud.firestore {
         && validBirthdayUpdate()
         && validPhotoUpdate();
       allow delete: if isOwner(userId);
+
+      // ── Bérletek (al-collection) ──────────────────────────
+      // A user csak olvashatja a saját bérleteit, írni csak admin tud.
+      match /passes/{passId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update: if isAdmin() && validPassData(request.resource.data);
+        allow delete: if isAdmin();
+      }
     }
 
     match /settings/{docId} {
@@ -133,6 +157,11 @@ service cloud.firestore {
             && request.resource.data.attended is bool
           )
         );
+    }
+
+    // Collection-group olvasás: admin egy lekérdezéssel látja az összes bérletet
+    match /{path=**}/passes/{passId} {
+      allow read: if isAdmin();
     }
 
     match /waitlist/{waitlistId} {

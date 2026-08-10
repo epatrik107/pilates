@@ -564,11 +564,13 @@ exports.deleteOwnAccountData = onCall({ region: REGION }, async (request) => {
   const bookingsQuery = db.collection('bookings').where('userId', '==', uid);
   const waitlistQuery = db.collection('waitlist').where('userId', '==', uid);
   const userRef = db.collection('users').doc(uid);
+  const passesQuery = userRef.collection('passes');
 
   return db.runTransaction(async (transaction) => {
-    const [bookingsSnap, waitlistSnap] = await Promise.all([
+    const [bookingsSnap, waitlistSnap, passesSnap] = await Promise.all([
       transaction.get(bookingsQuery),
-      transaction.get(waitlistQuery)
+      transaction.get(waitlistQuery),
+      transaction.get(passesQuery)
     ]);
 
     for (const bookingDoc of bookingsSnap.docs) {
@@ -583,6 +585,7 @@ exports.deleteOwnAccountData = onCall({ region: REGION }, async (request) => {
     }
 
     waitlistSnap.docs.forEach((docSnap) => transaction.delete(docSnap.ref));
+    passesSnap.docs.forEach((docSnap) => transaction.delete(docSnap.ref));
     transaction.delete(userRef);
     return { deletedBookings: bookingsSnap.size, deletedWaitlistEntries: waitlistSnap.size };
   });
