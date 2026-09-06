@@ -51,14 +51,14 @@ test('callable validation rejects missing auth, unverified email and invalid str
   assert.throws(() => __test.requireString(12, 'classId'), assertHttpsCode('invalid-argument'));
 });
 
-test('cancellation policy preserves the 24-hour cutoff and five-minute grace period', () => {
+test('cancellation policy preserves the 48-hour cutoff and five-minute grace period', () => {
   const { __test } = loadFunctions();
   const now = new Date('2026-06-22T10:00:00.000Z');
   const timestamp = (value) => ({ toDate: () => new Date(value) });
 
   assert.equal(__test.canCancelBookingData({}, now), true, 'legacy bookings without a start timestamp remain cancellable');
-  assert.equal(__test.canCancelBookingData({ classStartTimestamp: timestamp('2026-06-23T10:00:01.000Z') }, now), true);
-  assert.equal(Boolean(__test.canCancelBookingData({ classStartTimestamp: timestamp('2026-06-23T10:00:00.000Z') }, now)), false);
+  assert.equal(__test.canCancelBookingData({ classStartTimestamp: timestamp('2026-06-24T10:00:01.000Z') }, now), true);
+  assert.equal(Boolean(__test.canCancelBookingData({ classStartTimestamp: timestamp('2026-06-24T10:00:00.000Z') }, now)), false);
   assert.equal(__test.canCancelBookingData({
     classStartTimestamp: timestamp('2026-06-22T12:00:00.000Z'),
     bookedAt: timestamp('2026-06-22T09:55:01.000Z')
@@ -310,6 +310,7 @@ test('booking trigger sends mocked user/admin emails, escapes HTML and strips su
     assert.doesNotMatch(calls[0].body.subject, /[\r\n]/);
     assert.match(calls[0].body.html, /Elek&gt;/);
     assert.doesNotMatch(calls[0].body.html, /<Teszt Elek>/);
+    assert.match(calls[0].body.html, /48 órával/);
     assert.equal(calls[0].body.attachments[0].filename, 'Balance-Studio-foglalás.ics');
     assert.match(Buffer.from(calls[0].body.attachments[0].content, 'base64').toString(), /BEGIN:VCALENDAR/);
   } finally {

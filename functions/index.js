@@ -26,6 +26,7 @@ const RESEND_FROM = 'Balance Studio <noreply@balance-studio.hu>';
 const ADMIN_EMAIL = 'balance.szonja@gmail.com'; // Átírható az admin valós email címére
 const SITE_URL    = 'https://balance-studio.hu';
 const REGION      = 'europe-west1';
+const CANCELLATION_CUTOFF_HOURS = 48;
 
 // ── Magyar hónapnevek ────────────────────────────────────────
 const HU_MONTHS = [
@@ -98,7 +99,7 @@ function canCancelBookingData(data, now = new Date()) {
     : data.bookedAt
       ? new Date(data.bookedAt)
       : null;
-  return now < new Date(classStart.getTime() - 24 * 60 * 60 * 1000)
+  return now < new Date(classStart.getTime() - CANCELLATION_CUTOFF_HOURS * 60 * 60 * 1000)
     || (bookedAt && now < new Date(bookedAt.getTime() + 5 * 60 * 1000));
 }
 
@@ -317,9 +318,9 @@ function bookingConfirmationHtml(data) {
 
     <p style="margin:0 0 20px;font-size:14px;color:#5c3d2e;line-height:1.7;">
       Amennyiben meggondolod magad és érvényteleníteni szeretnéd a bejelentkezésedet,
-      ezt az óra kezdete előtt <strong>24 órával</strong> megteheted az alábbi gombra kattintva.
+      ezt az óra kezdete előtt <strong>48 órával</strong> megteheted az alábbi gombra kattintva.
       Ha ezt követően mondanád le az órát, kérünk jelezd nekünk, azonban ilyen esetben
-      (24 órán belüli lemondás vagy lemondás nélküli mulasztás) ez fizetési kötelezettséggel járhat.
+      (48 órán belüli lemondás vagy lemondás nélküli mulasztás) ez fizetési kötelezettséggel járhat.
     </p>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
       <tr><td align="center">
@@ -343,8 +344,8 @@ function reminderHtml(data) {
     </p>
     ${classDetailsTable(data)}
     <p style="margin:0;font-size:14px;color:#5c3d2e;line-height:1.7;">
-      Ha már nem tudsz részt venni, kérünk jelezd nekünk telefonon vagy emailben, mert a 24 órán belüli
-      lemondás fizetési kötelezettséggel jár.
+      Ha már nem tudsz részt venni, kérünk jelezd nekünk telefonon vagy emailben, mert a 48 órás online
+      lemondási határidő már lejárt, és a késői lemondás fizetési kötelezettséggel járhat.
     </p>
   `);
 }
