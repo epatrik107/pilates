@@ -11,8 +11,6 @@ import {
   verifyBeforeUpdateEmail,
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   linkWithCredential
 } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
 import {
@@ -141,10 +139,6 @@ export async function saveBirthday(uid, birthdayDate) {
 }
 
 // ── Google Sign-In ──────────────────────────────────────────
-function isMobile() {
-  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-}
-
 async function ensureGoogleProfile(user) {
   const ref = doc(db, 'users', user.uid);
   const snap = await getDoc(ref).catch(() => null);
@@ -161,28 +155,11 @@ async function ensureGoogleProfile(user) {
 
 export async function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
-
-  if (isMobile()) {
-    // Redirect flow avoids popup-blocked errors on mobile
-    await signInWithRedirect(auth, provider);
-    // Page will reload — result is picked up by handleGoogleRedirect()
-    return null;
-  }
-
+  // Firebase redirect auth needs first-party auth helpers when third-party
+  // storage is blocked. This site is served by GitHub Pages, so use the
+  // Firebase-recommended popup flow on every device instead.
   const result = await signInWithPopup(auth, provider);
   return ensureGoogleProfile(result.user);
-}
-
-// Call on page load to finish redirect-based Google sign-in
-export async function handleGoogleRedirect() {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result?.user) {
-      await ensureGoogleProfile(result.user);
-    }
-  } catch (err) {
-    console.warn('Google redirect result error:', err);
-  }
 }
 
 // ── Link password provider to Google-only account ───────────

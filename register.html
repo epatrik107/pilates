@@ -128,15 +128,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIds1K1eN7N6jIeHz" crossorigin="anonymous"></script>
   <script type="module">
-    import { registerUser, signInWithGoogle, handleGoogleRedirect, logoutUser } from './js/auth.js';
+    import { registerUser, signInWithGoogle, logoutUser } from './js/auth.js';
     import { auth, onAuthStateChanged } from './js/firebase-config.js';
     import { validatePassword, checkRateLimit, initCookieConsent } from './js/ui.js';
     initCookieConsent();
-
-    // Handle Google redirect result (mobile sign-in)
-    handleGoogleRedirect().then(() => {
-      if (auth.currentUser) window.location.href = 'index.html';
-    });
 
     let isRegistering = false;
 
@@ -254,7 +249,6 @@
       isRegistering = true;
       try {
         const user = await signInWithGoogle();
-        if (!user) return; // redirect flow
         window.location.href = 'index.html';
       } catch (err) {
         isRegistering = false;
